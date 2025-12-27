@@ -10,10 +10,11 @@
   const DRAG_PX = 6;
   const DRAG_MS = 450;
 
-  // Active pointer tracking (so we still get "click" even if map captures pointer)
-  const active = new Map(); // pointerId -> { item, downX, downY, downT }
+  // pointerId -> { item, downX, downY, downT }
+  const active = new Map();
 
-  // Global pointerup capture: robust against stopPropagation / pointer capture in map-core
+  // Capture-phase pointerup so we still see it even if the map captures pointers.
+  // IMPORTANT: Do NOT preventDefault/stopPropagation here, otherwise map-core may get stuck.
   function onGlobalPointerUp(e) {
     const rec = active.get(e.pointerId);
     if (!rec) return;
@@ -28,27 +29,26 @@
 
     const item = rec.item;
 
-    // PRIORITY: goto > href
-    if (item.goto && window.KMAP?.goTo) {
-      e.preventDefault();
-      e.stopPropagation();
-      const g = item.goto || {};
-      window.KMAP.goTo(g.x ?? 0, g.y ?? 0, g.zoom ?? null, { duration: g.duration ?? 900 });
-      return;
-    }
+    // Let map-core finish its pointerup handling first (release drag, etc.)
+    requestAnimationFrame(() => {
+      // PRIORITY: goto > href
+      if (item.goto && window.KMAP?.goTo) {
+        const g = item.goto || {};
+        window.KMAP.goTo(g.x ?? 0, g.y ?? 0, g.zoom ?? null, { duration: g.duration ?? 900 });
+        return;
+      }
 
-    if (item.href) {
-      e.preventDefault();
-      e.stopPropagation();
-      window.open(item.href, item.target || "_blank", "noopener,noreferrer");
-    }
+      if (item.href) {
+        const target = item.target || "_blank";
+        window.open(item.href, target, "noopener,noreferrer");
+      }
+    });
   }
 
   function onGlobalPointerCancel(e) {
     active.delete(e.pointerId);
   }
 
-  // Capture-phase listeners on window (important)
   window.addEventListener("pointerup", onGlobalPointerUp, true);
   window.addEventListener("pointercancel", onGlobalPointerCancel, true);
 
@@ -87,28 +87,24 @@
       const hasHref = !!item.href;
 
       if (!hasGoto && !hasHref) {
-        // keep it non-interactive so map drag is clean
+        // non-interactive images should not interfere with pan
         wrap.style.pointerEvents = "none";
         continue;
       }
 
-      // interactive
       wrap.style.pointerEvents = "auto";
       wrap.style.cursor = "pointer";
 
-      // Record pointerdown (do NOT stop propagation; user can still drag the map)
-      wrap.addEventListener(
-        "pointerdown",
-        (e) => {
-          active.set(e.pointerId, {
-            item,
-            downX: e.clientX ?? 0,
-            downY: e.clientY ?? 0,
-            downT: performance.now()
-          });
-        },
-        { passive: true }
-      );
+      // Record pointerdown, but do not block propagation;
+      // map-core can still start drag if user drags.
+      wrap.addEventListener("pointerdown", (e) => {
+        active.set(e.pointerId, {
+          item,
+          downX: e.clientX ?? 0,
+          downY: e.clientY ?? 0,
+          downT: performance.now()
+        });
+      }, { passive: true });
     }
   }
 
