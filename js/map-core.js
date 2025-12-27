@@ -81,6 +81,34 @@
   // Initial render
   applyTransform();
 
+  /* =========================================================
+     NEW: init TextBoxes even if textBox.js loads AFTER map-core
+     ========================================================= */
+  function initTextBoxesWhenReady(){
+    let done = false;
+
+    function tryInit(){
+      if (done) return true;
+      if (typeof window.createTextBoxes === "function"){
+        try { window.createTextBoxes(KMAP.world); } catch(e){}
+        done = true;
+        return true;
+      }
+      return false;
+    }
+
+    // try now
+    if (tryInit()) return;
+
+    // keep trying for a short time (covers Wix / slow script load)
+    const t0 = performance.now();
+    const timer = setInterval(() => {
+      if (tryInit() || (performance.now() - t0) > 5000) clearInterval(timer);
+    }, 50);
+  }
+  initTextBoxesWhenReady();
+  /* ======================= END NEW ======================= */
+
   // Home helper
   function goHome(){
     const t = START();
