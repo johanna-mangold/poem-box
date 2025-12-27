@@ -28,13 +28,30 @@
       wrap.style.setProperty("--op", `${op}`);
 
       const img = document.createElement("img");
-      img.alt = "";
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.src = item.src;
+img.alt = "";
+img.loading = "lazy";
+img.decoding = "async";
+img.src = item.src;
 
-      wrap.appendChild(img);
-      imageLayer.appendChild(wrap);
+let node = img;
+
+if (item.href) {
+  const link = document.createElement("a");
+  link.href = item.href;
+  link.target = item.target || "_blank";
+  link.rel = "noopener noreferrer";
+  link.style.display = "inline-block";
+  link.style.pointerEvents = "auto";
+
+  link.appendChild(img);
+  node = link;
+
+  wrap.style.pointerEvents = "auto";
+}
+
+wrap.appendChild(node);
+imageLayer.appendChild(wrap);
+
     }
   }
 
