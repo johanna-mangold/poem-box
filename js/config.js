@@ -18,7 +18,7 @@
 
     // IMAGES
     MAP_IMAGES: [
-      // { src:"https://static.wixstatic.com/media/DEINBILD.png", x: 200, y: 140, w: 260, rot: 0, op: 1 },
+      // { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 200, y: 140, w: 260, rot: 0, op: 1 },
     ],
 
     // YOUTUBE
