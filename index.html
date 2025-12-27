@@ -381,6 +381,8 @@
 <script defer src="./js/poem-distort.js"></script>
 <script defer src="./js/p5-game.js"></script>
 <script defer src="./js/gen-poem.js"></script>
+<script defer src="./js/poem-system.js"></script>
+
 </head>
 
 <body>
@@ -443,6 +445,8 @@ into this open womb
 
       <div class="genPOI" id="genPOI" aria-label="poem generator">
         <pre id="genPoemBox" class="genBox" aria-label="Tap / click to generate poem">click</pre>
+        <div id="poemGenStatus" style="position:absolute; right:10px; bottom:10px; font-size:11px; opacity:.35; pointer-events:none;"></div>
+
         <button class="genReset" id="genReset" type="button" aria-label="reset"></button>
       </div>
     </div>
