@@ -1,5 +1,454 @@
-<html>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+
+<!-- p5.js -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
+
+<style>
+  :root{
+    --bg:#000;
+    --line: rgba(255,255,255,.18);
+    --line2: rgba(255,255,255,.32);
+    --cell: 48px;
+    --major: calc(var(--cell) * 5);
+    --vh: 1vh;
+  }
+
+  html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    background: var(--bg);
+    overflow:hidden;
+    -webkit-text-size-adjust:100%;
+    overscroll-behavior:none;
+  }
+
+  body{
+    position: relative;
+    height: calc(var(--vh) * 100);
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* MAP */
+  #viewport{
+    position:absolute;
+    left:0; top:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    cursor: grab;
+    touch-action:none;
+    background: var(--bg);
+  }
+  #viewport:active{ cursor: grabbing; }
+
+  #world{ z-index: 10; }
+  #grid{ z-index: 5; }
+  #shade{ z-index: 6; }
+
+  #world{
+    position:absolute;
+    left:0; top:0;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+    transform-origin: 0 0;
+  }
+
+  #grid{
+    position:absolute;
+    inset:-12px;
+    pointer-events:none;
+    background: var(--bg);
+    background-image:
+      repeating-linear-gradient(to right,
+        transparent 0,
+        transparent calc(var(--cell) - 1px),
+        var(--line) calc(var(--cell) - 1px),
+        var(--line) var(--cell)
+      ),
+      repeating-linear-gradient(to bottom,
+        transparent 0,
+        transparent calc(var(--cell) - 1px),
+        var(--line) calc(var(--cell) - 1px),
+        var(--line) var(--cell)
+      ),
+      repeating-linear-gradient(to right,
+        transparent 0,
+        transparent calc(var(--major) - 1px),
+        var(--line2) calc(var(--major) - 1px),
+        var(--line2) var(--major)
+      ),
+      repeating-linear-gradient(to bottom,
+        transparent 0,
+        transparent calc(var(--major) - 1px),
+        var(--line2) calc(var(--major) - 1px),
+        var(--line2) var(--major)
+      );
+    will-change: background-position;
+  }
+
+  #shade{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 78%, rgba(0,0,0,.7) 100%);
+  }
+
+  .node{
+    position:absolute;
+    color:#fff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    opacity:.95;
+    max-width: 340px;
+    user-select:none;
+    -webkit-user-select:none;
+    pointer-events:none;
+  }
+
+  /* LINES */
+  #linesCanvas{
+    position:absolute;
+    inset:0;
+    z-index: 3;
+    pointer-events:none;
+  }
+
+  /* IMAGES */
+  #imageLayer{
+    position:absolute;
+    left:0; top:0;
+    width:0; height:0;
+    pointer-events:none;
+    z-index: 1;
+  }
+  .mapImg{
+    position:absolute;
+    left:0; top:0;
+    transform: translate3d(var(--x), var(--y), 0) rotate(var(--rot));
+    transform-origin: center center;
+    opacity: var(--op);
+    will-change: transform;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,.35));
+  }
+  .mapImg img{
+    display:block;
+    width: var(--w);
+    height: auto;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+
+  /* YOUTUBE */
+  #videoLayer{
+    position:absolute;
+    left:0; top:0;
+    width:0; height:0;
+    pointer-events:none;
+    z-index: 4;
+  }
+  .mapVideo{
+    position:absolute;
+    left:0; top:0;
+    transform: translate3d(var(--x), var(--y), 0) rotate(var(--rot));
+    transform-origin: center center;
+    opacity: var(--op);
+    width: var(--w);
+    height: var(--h);
+    will-change: transform;
+    filter: drop-shadow(0 0 12px rgba(0,0,0,.45));
+    pointer-events:auto;
+  }
+  .mapVideo iframe{
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+    background:#000;
+    pointer-events:auto;
+  }
+
+  /* FLIPBOOK */
+  .flipPOI{
+    position:absolute;
+    left: 420px;
+    top:  -30px;
+
+    width: 160px;
+    aspect-ratio: 848 / 1200;
+    height: auto;
+
+    pointer-events:auto;
+    cursor: pointer;
+    user-select:none;
+    -webkit-user-drag:none;
+
+    filter: drop-shadow(0 0 10px rgba(0,0,0,.45));
+    touch-action: manipulation;
+    z-index: 5;
+  }
+  .flipPOI img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit: contain;
+    display:block;
+    user-select:none;
+    -webkit-user-drag:none;
+    pointer-events:none;
+  }
+  .flipPOI img.a{ opacity: 1; }
+  .flipPOI img.b{ opacity: 0; }
+
+  @keyframes flipA{
+    0%, 49.9% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  @keyframes flipB{
+    0%, 49.9% { opacity: 0; }
+    50%, 100% { opacity: 1; }
+  }
+  .flipPOI:hover img.a,
+  .flipPOI.isAnimating img.a{ animation: flipA 520ms steps(1,end) infinite; }
+  .flipPOI:hover img.b,
+  .flipPOI.isAnimating img.b{ animation: flipB 520ms steps(1,end) infinite; }
+  .flipPOI:not(:hover):not(.isAnimating) img{ animation: none !important; }
+
+  /* POEM DISTORT */
+  .poemPOI{
+    position:absolute;
+    left: 40px;
+    top:  32px;
+    pointer-events:none;
+    z-index: 5;
+  }
+  #poem{
+    pointer-events:auto;
+    display:inline-block;
+
+    font-family:"Roboto Mono", monospace;
+    font-size: 13px;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+
+    color:#fff;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+
+    white-space: pre-wrap;
+    user-select:none;
+    -webkit-user-select:none;
+
+    text-shadow: 0 0 10px rgba(0,0,0,0.55);
+
+    width: max-content;
+    max-width: clamp(360px, 70vw, 980px);
+
+    contain: layout paint;
+  }
+  .w{
+    display:inline-block;
+    will-change: transform, opacity;
+    transition: transform 70ms linear, opacity 170ms linear;
+    transform: translate3d(0,0,0);
+  }
+  @media (pointer: coarse){
+    .w{ filter:none !important; }
+  }
+
+  /* P5 GAME */
+  .p5POI{
+    position:absolute;
+    left: 680px;
+    top:  120px;
+    width: 520px;
+    height: 520px;
+
+    pointer-events:auto;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+
+    overflow: visible;
+    z-index: 5;
+  }
+  .p5POI canvas{
+    display:block;
+    width:100% !important;
+    height:100% !important;
+    touch-action:none;
+  }
+  .p5Reset{
+    position:absolute;
+    left: 50%;
+    bottom: -14px;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 0;
+    padding: 0;
+    background: #fff;
+    opacity: 0.88;
+    cursor: pointer;
+    z-index: 5;
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.10), 0 0 14px rgba(255,255,255,0.22);
+  }
+  .p5Reset:active{ transform: translateX(-50%) scale(0.96); }
+
+  /* GENERATOR */
+  .genPOI{
+    position:absolute;
+    left: 1220px;
+    top:  40px;
+    width: 360px;
+    height: 360px;
+
+    pointer-events:auto;
+    user-select:none;
+    -webkit-user-select:none;
+    overflow: visible;
+    z-index: 5;
+  }
+  .genBox{
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 22px;
+    box-sizing: border-box;
+
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    font-size: 13px;
+
+    color:#fff;
+    background: transparent;
+
+    text-shadow: 0 0 10px rgba(0,0,0,0.55);
+
+    user-select:none;
+    -webkit-user-select:none;
+    cursor: pointer;
+
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .genReset{
+    position:absolute;
+    left: 50%;
+    bottom: -14px;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 0;
+    padding: 0;
+    background: #fff;
+    opacity: 0.55;
+    cursor: pointer;
+    z-index: 5;
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.08), 0 0 14px rgba(255,255,255,0.18);
+  }
+  .genReset:active{ transform: translateX(-50%) scale(0.96); }
+</style>
+
+<!-- ✅ JS files -->
+<script defer src="./js/config.js"></script>
+<script defer src="./js/map-core.js"></script>
+<script defer src="./js/lines.js"></script>
+<script defer src="./js/images.js"></script>
+<script defer src="./js/youtube.js"></script>
+<script defer src="./js/flipbook.js"></script>
+<script defer src="./js/poem-distort.js"></script>
+<script defer src="./js/p5-game.js"></script>
+<script defer src="./js/gen-poem.js"></script>
+</head>
+
 <body>
-<h1>Hello, World</h1>
+  <div id="viewport">
+    <canvas id="linesCanvas" aria-label="connection lines"></canvas>
+
+    <div id="world">
+      <div class="node" style="left:0px; top:0px;">start (0,0)</div>
+      <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
+      <div class="node" style="left:-720px; top:520px;">node links/unten</div>
+
+      <div id="imageLayer" aria-label="images"></div>
+      <div id="videoLayer" aria-label="videos"></div>
+
+      <div class="flipPOI" id="flipPOI" aria-label="animation">
+        <img class="a" alt=""
+          src="https://static.wixstatic.com/media/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png/v1/fill/w_600,h_848,al_c,lg_1,q_90,enc_avif,quality_auto/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png">
+        <img class="b" alt=""
+          src="https://static.wixstatic.com/media/0f3578_45a50308e2a44b378b93c5eae6b3ad57~mv2.png/v1/fill/w_600,h_848,al_c,lg_1,q_90,enc_avif,quality_auto/0f3578_45a50308e2a44b378b93c5eae6b3ad57~mv2.png">
+      </div>
+
+      <div class="poemPOI" id="poemPOI">
+        <div id="poem" aria-label="interactive poem">
+the eyes weep 
+down to the mouth
+my mouths speaks 
+into your open throat
+you will see
+it fell down from me
+it fell down from you 
+into this open wound
+my hands grow into talons
+grabbing in gallons 
+pebbles and bones
+your hands grow into shells
+i fill them up 
+till you're standing prone
+you will see
+it fell down from me
+it fell down from you 
+into this open tomb
+with our fingers 
+counting the good ones
+leaving the bad ones
+we share a truth
+with our fingers 
+parting strands
+and holding space 
+for the bigger news
+we are fine
+our hearts intertwine
+i fell down from you
+into this open womb
+        </div>
+      </div>
+
+      <div class="p5POI" id="p5POI" aria-label="poem grid game">
+        <button class="p5Reset" id="p5Reset" type="button" aria-label="reset"></button>
+      </div>
+
+      <div class="genPOI" id="genPOI" aria-label="poem generator">
+        <pre id="genPoemBox" class="genBox" aria-label="Tap / click to generate poem">click</pre>
+        <button class="genReset" id="genReset" type="button" aria-label="reset"></button>
+      </div>
+    </div>
+
+    <div id="grid"></div>
+    <div id="shade"></div>
+  </div>
 </body>
 </html>
