@@ -6,10 +6,10 @@
 const TEXT_BOXES = [
   {
     id: "text1",
-    x: 200,
-    y: 300,
+    x: 1000,
+    y: 1000,
     w: 420,
-    h: 320,
+    h: 220,
 
     text: `
 This is a simple reading box.
