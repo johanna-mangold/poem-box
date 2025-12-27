@@ -311,7 +311,7 @@
   }
   .p5Reset:active{ transform: translateX(-50%) scale(0.96); }
 
-  /* GENERATOR */
+  /* GENERATOR (typewriter) */
   .genPOI{
     position:absolute;
     left: -600px;
@@ -369,6 +369,53 @@
     box-shadow: 0 0 0 6px rgba(255,255,255,0.08), 0 0 14px rgba(255,255,255,0.18);
   }
   .genReset:active{ transform: translateX(-50%) scale(0.96); }
+
+  /* AUTO POEM (mutating/freeze system) */
+  .autoPOI{
+    position:absolute;
+    left: -1040px;  /* X -> anpassen */
+    top:  -600px;   /* Y -> anpassen */
+    width: 360px;
+    height: 360px;
+    pointer-events:auto;
+    user-select:none;
+    -webkit-user-select:none;
+    overflow: visible;
+    z-index: 5;
+  }
+  .autoBox{
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 22px;
+    box-sizing: border-box;
+
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    font-size: 13px;
+
+    color:#fff;
+    background: transparent;
+
+    text-shadow: 0 0 10px rgba(0,0,0,0.55);
+
+    user-select:none;
+    -webkit-user-select:none;
+
+    margin:0;
+  }
+  .autoStatus{
+    position:absolute;
+    right:10px;
+    bottom:10px;
+    font-size:11px;
+    opacity:.35;
+    pointer-events:none;
+  }
 </style>
 
 <!-- ✅ JS files -->
@@ -381,6 +428,14 @@
 <script defer src="./js/poem-distort.js"></script>
 <script defer src="./js/p5-game.js"></script>
 <script defer src="./js/gen-poem.js"></script>
+
+<!-- ✅ config for the independent auto poem -->
+<script>
+  window.POEM_SYS_CONFIG = {
+    outputId: "autoPoem",
+    statusId: "autoStatus"
+  };
+</script>
 <script defer src="./js/poem-system.js"></script>
 
 </head>
@@ -445,10 +500,15 @@ into this open womb
 
       <div class="genPOI" id="genPOI" aria-label="poem generator">
         <pre id="genPoemBox" class="genBox" aria-label="Tap / click to generate poem">click</pre>
-        <div id="poemGenStatus" style="position:absolute; right:10px; bottom:10px; font-size:11px; opacity:.35; pointer-events:none;"></div>
-
         <button class="genReset" id="genReset" type="button" aria-label="reset"></button>
       </div>
+
+      <!-- ✅ independent auto poem -->
+      <div class="autoPOI" id="autoPOI" aria-label="auto poem">
+        <pre id="autoPoem" class="autoBox" aria-label="auto poem"></pre>
+        <div id="autoStatus" class="autoStatus"></div>
+      </div>
+
     </div>
 
     <div id="grid"></div>
