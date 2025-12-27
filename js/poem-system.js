@@ -1,15 +1,12 @@
-/* poem-system.js
-   Self-contained poem generator + freeze-on-movement logic.
-   Expects:
-     <div id="poem"></div>
-     <div id="status"></div>
+/* ./js/poem-system.js
+   Dynamic poem generator + freeze-on-movement.
+   Target: writes into #genPoemBox (preferred) OR #poemGen
 */
 
 (() => {
   "use strict";
 
   /* ================== WORD DATABASE ================== */
-
   const DET = ["the","a","this","that","these","those","my","your","our","her","his","their","no","all","every"];
   const PRON = ["i","you","we","they","me","us","them","she","he","it","who","someone","no one"];
   const PREP = ["in","on","into","through","beneath","between","b'tween","with","without","under","above","from","for","of","to","as","like","behind","around"];
@@ -67,8 +64,6 @@
     "invisible","strong","weak","single","distant","soft","lonely","trembling"
   ];
 
-  /* ============ SAFE MERGE + FALLBACK ============ */
-
   const WORDS = [
     ...DET, ...PRON, ...PREP, ...CONJ, ...AUX, ...NEG, ...MOD,
     ...SOUND, ...VERB, ...NOUN, ...ADJ
@@ -77,7 +72,6 @@
   const rint = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
   const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 
-  /* grammar-ish patterns */
   const PATTERNS = [
     () => [pick(DET),  pick(ADJ),  pick(NOUN)],
     () => [pick(PRON), pick(VERB)],
@@ -112,49 +106,53 @@
     return parts.join(" ");
   }
 
-  function initPoemSystem(userCfg = {}) {
-    const poemEl = document.getElementById("poem");
-    const statusEl = document.getElementById("status");
+  function initPoemSystem(cfg = {}) {
+    // Preferred output: your generator box
+    const out = document.getElementById(cfg.outputId || "genPoemBox")
+           || document.getElementById("poemGen");
 
-    if (!poemEl || !statusEl) {
-      console.warn("[poem-system] Missing #poem or #status element.");
-      return;
-    }
+    const statusEl = document.getElementById(cfg.statusId || "poemGenStatus");
+
+    if (!out) return; // silently do nothing if not present
 
     if (!WORDS.length) {
-      poemEl.textContent =
-        "no words\n\n" +
-        "the system waits\n" +
-        "but nothing arrives";
-      statusEl.textContent = "word list empty";
+      out.textContent = "no words\n\nthe system waits\nbut nothing arrives";
+      if (statusEl) statusEl.textContent = "word list empty";
       return;
     }
 
-    const cfg = {
+    const settings = {
       MAX_LINES: 12,
       START_LINES: 9,
       TICK_MS: 900,
       STILLNESS_MS: 650,
-      ...userCfg
+      freezeOnlyInsideViewport: true,
+      viewportId: "viewport",
+      ...cfg
     };
 
     let lines = [];
     let frozen = false;
     let stillTimer = null;
-    let intervalId = null;
 
-    function render(){
-      poemEl.textContent = lines.join("\n");
-    }
+    const setFrozen = (v) => {
+      frozen = !!v;
+      if (statusEl) statusEl.textContent = frozen ? "frozen" : "";
+    };
 
-    function seed(){
+    const render = () => {
+      // If out is <pre>, textContent is perfect.
+      out.textContent = lines.join("\n");
+    };
+
+    const seed = () => {
       lines = [];
-      const n = Math.min(cfg.MAX_LINES, Math.max(4, cfg.START_LINES));
-      for(let i=0;i<n;i++) lines.push(makeLine());
+      const n = Math.min(settings.MAX_LINES, Math.max(4, settings.START_LINES));
+      for (let i=0;i<n;i++) lines.push(makeLine());
       render();
-    }
+    };
 
-    function evolve(){
+    const evolve = () => {
       if (frozen) return;
       if (!lines.length) seed();
 
@@ -163,49 +161,38 @@
       if (m < 0.72) {
         const idx = rint(0, lines.length - 1);
         lines[idx] = mutateLine(lines[idx]);
-      } else if (m < 0.92) {
-        const idx = rint(0, lines.length - 1);
-        lines[idx] = makeLine();
       } else {
         const idx = rint(0, lines.length - 1);
         lines[idx] = makeLine();
       }
 
-      if (lines.length > cfg.MAX_LINES) lines = lines.slice(0, cfg.MAX_LINES);
+      if (lines.length > settings.MAX_LINES) lines = lines.slice(0, settings.MAX_LINES);
       render();
-    }
+    };
 
-    function setFrozen(v){
-      frozen = !!v;
-      document.body.classList.toggle("frozen", frozen);
-      statusEl.textContent = frozen ? "frozen" : "";
-    }
-
-    function onDisturb(){
+    const disturb = () => {
       setFrozen(true);
       clearTimeout(stillTimer);
-      stillTimer = setTimeout(() => setFrozen(false), cfg.STILLNESS_MS);
-    }
+      stillTimer = setTimeout(() => setFrozen(false), settings.STILLNESS_MS);
+    };
 
-    ["mousemove","touchmove","wheel","keydown"].forEach(ev=>{
-      window.addEventListener(ev, onDisturb, { passive: true });
+    // Freeze trigger scope:
+    // - Your map uses touch-action:none + dragging etc.
+    // - We freeze on movement INSIDE #viewport by default.
+    const target = settings.freezeOnlyInsideViewport
+      ? (document.getElementById(settings.viewportId) || window)
+      : window;
+
+    ["mousemove","touchmove","wheel","keydown"].forEach(ev => {
+      target.addEventListener(ev, disturb, { passive: true });
     });
 
     setFrozen(false);
     seed();
-    intervalId = setInterval(evolve, cfg.TICK_MS);
-
-    // Optional: expose a tiny API for debugging
-    window.__POEM__ = {
-      reseed: seed,
-      freeze: () => setFrozen(true),
-      unfreeze: () => setFrozen(false),
-      stop: () => { if (intervalId) clearInterval(intervalId); intervalId = null; }
-    };
+    setInterval(evolve, settings.TICK_MS);
   }
 
-  // Auto-start on DOM ready, with optional config via window.POEM_CONFIG
-  const start = () => initPoemSystem(window.POEM_CONFIG || {});
+  const start = () => initPoemSystem(window.POEM_SYS_CONFIG || {});
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {
