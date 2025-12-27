@@ -1,6 +1,6 @@
 /* ./js/poem-system.js
-   Dynamic poem generator + freeze-on-movement.
-   Target: writes into #genPoemBox (preferred) OR #poemGen
+   Independent auto-poem system.
+   Writes into outputId (default: "autoPoem") and statusId (default: "autoStatus")
 */
 
 (() => {
@@ -106,30 +106,27 @@
     return parts.join(" ");
   }
 
-  function initPoemSystem(cfg = {}) {
-    // Preferred output: your generator box
-    const out = document.getElementById(cfg.outputId || "genPoemBox")
-           || document.getElementById("poemGen");
-
-    const statusEl = document.getElementById(cfg.statusId || "poemGenStatus");
-
-    if (!out) return; // silently do nothing if not present
-
-    if (!WORDS.length) {
-      out.textContent = "no words\n\nthe system waits\nbut nothing arrives";
-      if (statusEl) statusEl.textContent = "word list empty";
-      return;
-    }
-
-    const settings = {
+  function init(userCfg = {}) {
+    const cfg = {
+      outputId: "autoPoem",
+      statusId: "autoStatus",
       MAX_LINES: 12,
       START_LINES: 9,
       TICK_MS: 900,
       STILLNESS_MS: 650,
-      freezeOnlyInsideViewport: true,
-      viewportId: "viewport",
-      ...cfg
+      ...userCfg
     };
+
+    const out = document.getElementById(cfg.outputId);
+    const status = document.getElementById(cfg.statusId);
+
+    if (!out) return;
+
+    if (!WORDS.length) {
+      out.textContent = "no words\n\nthe system waits\nbut nothing arrives";
+      if (status) status.textContent = "word list empty";
+      return;
+    }
 
     let lines = [];
     let frozen = false;
@@ -137,17 +134,14 @@
 
     const setFrozen = (v) => {
       frozen = !!v;
-      if (statusEl) statusEl.textContent = frozen ? "frozen" : "";
+      if (status) status.textContent = frozen ? "frozen" : "";
     };
 
-    const render = () => {
-      // If out is <pre>, textContent is perfect.
-      out.textContent = lines.join("\n");
-    };
+    const render = () => { out.textContent = lines.join("\n"); };
 
     const seed = () => {
       lines = [];
-      const n = Math.min(settings.MAX_LINES, Math.max(4, settings.START_LINES));
+      const n = Math.min(cfg.MAX_LINES, Math.max(4, cfg.START_LINES));
       for (let i=0;i<n;i++) lines.push(makeLine());
       render();
     };
@@ -157,7 +151,6 @@
       if (!lines.length) seed();
 
       const m = Math.random();
-
       if (m < 0.72) {
         const idx = rint(0, lines.length - 1);
         lines[idx] = mutateLine(lines[idx]);
@@ -166,33 +159,28 @@
         lines[idx] = makeLine();
       }
 
-      if (lines.length > settings.MAX_LINES) lines = lines.slice(0, settings.MAX_LINES);
+      if (lines.length > cfg.MAX_LINES) lines = lines.slice(0, cfg.MAX_LINES);
       render();
     };
 
     const disturb = () => {
       setFrozen(true);
       clearTimeout(stillTimer);
-      stillTimer = setTimeout(() => setFrozen(false), settings.STILLNESS_MS);
+      stillTimer = setTimeout(() => setFrozen(false), cfg.STILLNESS_MS);
     };
 
-    // Freeze trigger scope:
-    // - Your map uses touch-action:none + dragging etc.
-    // - We freeze on movement INSIDE #viewport by default.
-    const target = settings.freezeOnlyInsideViewport
-      ? (document.getElementById(settings.viewportId) || window)
-      : window;
-
+    // freeze on movement within viewport (if present), else window
+    const target = document.getElementById("viewport") || window;
     ["mousemove","touchmove","wheel","keydown"].forEach(ev => {
       target.addEventListener(ev, disturb, { passive: true });
     });
 
     setFrozen(false);
     seed();
-    setInterval(evolve, settings.TICK_MS);
+    setInterval(evolve, cfg.TICK_MS);
   }
 
-  const start = () => initPoemSystem(window.POEM_SYS_CONFIG || {});
+  const start = () => init(window.POEM_SYS_CONFIG || {});
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {
