@@ -18,8 +18,8 @@
 
     // IMAGES
     MAP_IMAGES: [
-    { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 0, y: 0, w: 260, rot: 0, op: 1 },
-      {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: -300, y: -300, w: 500, rot: 0, op:1}],
+    { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: -600, y: 300, w: 360, rot: 0, op: 1 },
+      {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: 0, y: 0, w: 500, rot: 0, op:1}],
 
     // YOUTUBE
     MAP_YOUTUBE: [
