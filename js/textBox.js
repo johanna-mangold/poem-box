@@ -22,6 +22,39 @@ You can scroll inside this box.
 Line breaks stay intact.
 
 Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+
     `
   },
 
