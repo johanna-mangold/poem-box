@@ -2,6 +2,7 @@
   const viewport = document.getElementById("viewport");
   const world = document.getElementById("world");
   const grid = document.getElementById("grid");
+  if (!viewport || !world || !grid) return;
 
   window.KMAP = window.KMAP || {};
   const KMAP = window.KMAP;
@@ -10,12 +11,12 @@
   KMAP.world = world;
   KMAP.grid = grid;
 
-  // Hook-System, damit andere Module “andocken”
-  KMAP._applyHooks = [];
+  // Hook-System (lines redraw etc.)
+  KMAP._applyHooks = KMAP._applyHooks || [];
   KMAP.onApply = (fn) => { if (typeof fn === "function") KMAP._applyHooks.push(fn); };
 
-  // POI hit-test registry (für “onPOI && !ALT => nicht draggen”)
-  KMAP._poiHitTests = [];
+  // POI hit-test registry
+  KMAP._poiHitTests = KMAP._poiHitTests || [];
   KMAP.registerPOIHitTest = (fn) => { if (typeof fn === "function") KMAP._poiHitTests.push(fn); };
   KMAP.isOnPOI = (target) => KMAP._poiHitTests.some(fn => {
     try { return !!fn(target); } catch(e){ return false; }
@@ -34,47 +35,56 @@
   window.addEventListener("resize", setVh, {passive:true});
   if (window.visualViewport) window.visualViewport.addEventListener("resize", setVh, {passive:true});
 
-  /* Camera / map drag engine */
+  /* Camera state */
   const START = () => ({
     x: Math.round((window.visualViewport?.width ?? window.innerWidth) * 0.5),
     y: Math.round((window.visualViewport?.height ?? window.innerHeight) * 0.5)
   });
 
-  let camX = START().x;
-  let camY = START().y;
+  // Public state used by other modules + goTo
+  const s0 = START();
+  KMAP.state = KMAP.state || { x: s0.x, y: s0.y, scale: 1 };
 
   let dragging = false;
   let lastX = 0, lastY = 0;
   let vx = 0, vy = 0;
 
   // Home animation
-  let animatingHome = false;
-  let homeFrom = {x:0,y:0}, homeTo = {x:0,y:0}, homeT0 = 0;
-  const HOME_MS = 420;
+  let animating = false;
+  let animFrom = { x: 0, y: 0, scale: 1 };
+  let animTo   = { x: 0, y: 0, scale: 1 };
+  let animT0 = 0;
+  let animDur = 850;
 
-  function apply(){
-    world.style.transform = `translate3d(${camX}px, ${camY}px, 0)`;
-    grid.style.backgroundPosition = `${camX}px ${camY}px`;
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
-    // shared transform (no zoom => scale=1)
-    KMAP.transform = { x: camX, y: camY, scale: 1 };
+  // Exported applyTransform: THE single source of truth for transforms
+  function applyTransform(){
+    const x = KMAP.state.x;
+    const y = KMAP.state.y;
+    const scale = KMAP.state.scale ?? 1;
 
-    // run hooks (lines redraw etc.)
+    // Currently you don't use scale visually. Keep it here for future zoom.
+    // If you ever want real zoom, change to: `translate3d(x,y,0) scale(scale)`
+    world.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    grid.style.backgroundPosition = `${x}px ${y}px`;
+
+    // shared transform object for hooks (keep compatible)
+    KMAP.transform = { x, y, scale };
+
     for(const fn of KMAP._applyHooks) {
       try { fn(KMAP.transform); } catch(e){}
     }
   }
-  apply();
+  KMAP.applyTransform = applyTransform;
 
-  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  // Initial render
+  applyTransform();
 
+  // Home helper
   function goHome(){
-    const s = START();
-    animatingHome = true;
-    homeFrom = { x: camX, y: camY };
-    homeTo   = { x: s.x,  y: s.y  };
-    homeT0 = performance.now();
-    vx = vy = 0;
+    const t = START();
+    KMAP.goTo(t.x, t.y, 1, { duration: 420 });
   }
 
   /* Home Button */
@@ -107,7 +117,7 @@
   viewport.appendChild(homeBtn);
 
   function onDown(x, y){
-    if(animatingHome) animatingHome = false;
+    animating = false;
     dragging = true;
     lastX = x; lastY = y;
     vx = vy = 0;
@@ -119,14 +129,16 @@
     const dy = y - lastY;
     lastX = x; lastY = y;
 
-    camX += dx;
-    camY += dy;
+    KMAP.state.x += dx;
+    KMAP.state.y += dy;
 
     vx = dx; vy = dy;
-    apply();
+    applyTransform();
   }
 
-  function onUp(){ dragging = false; }
+  function onUp(){
+    dragging = false;
+  }
 
   // pointer drag (ignore POIs unless ALT)
   viewport.addEventListener("pointerdown", (e) => {
@@ -138,87 +150,85 @@
     e.preventDefault();
     viewport.setPointerCapture(e.pointerId);
     onDown(e.clientX, e.clientY);
-  });
+  }, { passive: false });
 
   viewport.addEventListener("pointermove", (e) => {
     if(!dragging) return;
     e.preventDefault();
     onMove(e.clientX, e.clientY);
-  });
+  }, { passive: false });
 
-  viewport.addEventListener("pointerup", (e) => { e.preventDefault(); onUp(); });
-  viewport.addEventListener("pointercancel", onUp);
+  viewport.addEventListener("pointerup", (e) => { e.preventDefault(); onUp(); }, { passive: false });
+  viewport.addEventListener("pointercancel", onUp, { passive: true });
 
   // wheel always moves map
   viewport.addEventListener("wheel", (e) => {
     e.preventDefault();
-    if(animatingHome) animatingHome = false;
+    animating = false;
 
-    camX -= e.deltaX;
-    camY -= e.deltaY;
+    KMAP.state.x -= e.deltaX;
+    KMAP.state.y -= e.deltaY;
 
     vx = -e.deltaX;
     vy = -e.deltaY;
 
-    apply();
+    applyTransform();
   }, { passive:false });
+
+  // Public goTo API
+  KMAP.goTo = function(x, y, zoom = null, opts = {}) {
+    animating = true;
+    animT0 = performance.now();
+    animDur = opts.duration ?? 850;
+
+    animFrom = {
+      x: KMAP.state.x,
+      y: KMAP.state.y,
+      scale: KMAP.state.scale ?? 1
+    };
+
+    animTo = {
+      x: Number(x) || 0,
+      y: Number(y) || 0,
+      scale: (zoom == null) ? (KMAP.state.scale ?? 1) : (Number(zoom) || 1)
+    };
+
+    // stop inertia so it doesn't fight the animation
+    vx = vy = 0;
+    dragging = false;
+  };
 
   function tick(ts){
     requestAnimationFrame(tick);
 
-    if(animatingHome){
-      const t = Math.min(1, (ts - homeT0) / HOME_MS);
+    if (animating){
+      const t = Math.min(1, (ts - animT0) / animDur);
       const k = easeOutCubic(t);
-      camX = homeFrom.x + (homeTo.x - homeFrom.x) * k;
-      camY = homeFrom.y + (homeTo.y - homeFrom.y) * k;
-      apply();
-      if(t >= 1){
-        animatingHome = false;
-        vx = vy = 0;
+
+      KMAP.state.x = animFrom.x + (animTo.x - animFrom.x) * k;
+      KMAP.state.y = animFrom.y + (animTo.y - animFrom.y) * k;
+      KMAP.state.scale = animFrom.scale + (animTo.scale - animFrom.scale) * k;
+
+      applyTransform();
+
+      if (t >= 1){
+        animating = false;
       }
       return;
     }
 
-    if(dragging) return;
+    if (dragging) return;
 
+    // inertia
     vx *= 0.90;
     vy *= 0.90;
-    if(Math.abs(vx) < 0.01 && Math.abs(vy) < 0.01) return;
+    if (Math.abs(vx) < 0.01 && Math.abs(vy) < 0.01) return;
 
-    camX += vx;
-    camY += vy;
-    apply();
+    KMAP.state.x += vx;
+    KMAP.state.y += vy;
+    applyTransform();
   }
   requestAnimationFrame(tick);
 
   viewport.addEventListener("dblclick", () => goHome());
 })();
-window.KMAP = window.KMAP || {};
-
-window.KMAP.goTo = function(x, y, zoom = null, opts = {}) {
-  const s = window.KMAP.state;
-  const apply = window.KMAP.applyTransform;
-  if (!s || typeof apply !== "function") return;
-
-  const duration = opts.duration ?? 850;
-
-  const startX = s.x, startY = s.y, startZ = s.scale;
-  const endX = x, endY = y, endZ = (zoom ?? s.scale);
-
-  const t0 = performance.now();
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-  function step(t){
-    const p = Math.min(1, (t - t0) / duration);
-    const e = easeOutCubic(p);
-
-    s.x = startX + (endX - startX) * e;
-    s.y = startY + (endY - startY) * e;
-    s.scale = startZ + (endZ - startZ) * e;
-
-    apply();
-    if (p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-};
-
