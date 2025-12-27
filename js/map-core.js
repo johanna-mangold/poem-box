@@ -193,4 +193,32 @@
 
   viewport.addEventListener("dblclick", () => goHome());
 })();
+window.KMAP = window.KMAP || {};
+
+window.KMAP.goTo = function(x, y, zoom = null, opts = {}) {
+  const s = window.KMAP.state;
+  const apply = window.KMAP.applyTransform;
+  if (!s || typeof apply !== "function") return;
+
+  const duration = opts.duration ?? 850;
+
+  const startX = s.x, startY = s.y, startZ = s.scale;
+  const endX = x, endY = y, endZ = (zoom ?? s.scale);
+
+  const t0 = performance.now();
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+  function step(t){
+    const p = Math.min(1, (t - t0) / duration);
+    const e = easeOutCubic(p);
+
+    s.x = startX + (endX - startX) * e;
+    s.y = startY + (endY - startY) * e;
+    s.scale = startZ + (endZ - startZ) * e;
+
+    apply();
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+};
 
