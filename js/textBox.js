@@ -8,8 +8,8 @@
     {
       id: "text1",
       title: "READ ME.txt",
-      x: 1000,
-      y: 1000,
+      x: 0,
+      y: 0,
       w: 420,
       h: 220,
       text: `
