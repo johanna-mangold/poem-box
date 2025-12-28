@@ -6,9 +6,9 @@
 const TEXT_BOXES = [
   {
     id: "text1",
-    x: 1000,
-    y: 1000,
-    w: 420,
+    x: 300,
+    y: 1600,
+    w: 820,
     h: 220,
 
     text: `
