@@ -15,8 +15,8 @@
 <style>
   :root{
     --bg:#000;
-    --line:  rgba(28,1,224,.18);
-    --line2: rgba(28,1,224,.32);
+    --line:  rgba(0,163,255,.18);
+    --line2: rgba(0,163,255,.32);
     --cell: 48px;
     --major: calc(var(--cell) * 5);
     --vh: 1vh;
@@ -241,6 +241,78 @@
       );
     clip-path: polygon(100% 0, 0 100%, 100% 100%);
   }
+
+  /* ==========================================================
+     ZINE READER (20 DOPPELSEITEN) ✅ NEW
+     ========================================================== */
+
+  .zinePOI{
+    position:absolute;
+    left: 1200px;
+    top:  -300px;
+
+    width: 980px;      /* passt du ggf an */
+    height: 640px;     /* passt du ggf an */
+
+    pointer-events:auto;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-user-drag:none;
+
+    filter: drop-shadow(0 0 14px rgba(0,0,0,.55));
+    touch-action: manipulation;
+    z-index: 5;
+  }
+
+  #zineImg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit: contain;
+    display:block;
+    user-select:none;
+    -webkit-user-drag:none;
+    pointer-events:none; /* clicks gehen an die hit-zones */
+  }
+
+  .zineHit{
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:50%;
+    cursor:pointer;
+  }
+  .zineHit.left{ left:0; }
+  .zineHit.right{ right:0; }
+
+  .zineCounter{
+    position:absolute;
+    right:12px;
+    bottom:10px;
+    font-family:"Roboto Mono", monospace;
+    font-size:12px;
+    line-height:1;
+    opacity:.7;
+    pointer-events:none;
+    text-shadow: 0 0 10px rgba(0,0,0,.6);
+  }
+
+  /* optional: kleines next/prev icon (sehr dezent) */
+  .zineHint{
+    position:absolute;
+    top:50%;
+    transform: translateY(-50%);
+    font-family:"Roboto Mono", monospace;
+    font-size:18px;
+    opacity:.25;
+    pointer-events:none;
+    text-shadow: 0 0 10px rgba(0,0,0,.7);
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .zineHint.left{ left:14px; }
+  .zineHint.right{ right:14px; }
 
   /* ==========================================================
      BUILD BADGE (manual build id)
@@ -692,6 +764,18 @@
       <div id="imageLayer" aria-label="images"></div>
       <div id="videoLayer" aria-label="videos"></div>
 
+      <!-- ======================================================
+           ZINE POI ✅ NEW
+           ====================================================== -->
+      <div class="zinePOI" id="zinePOI" aria-label="zine reader">
+        <img id="zineImg" alt="zine spread" draggable="false" />
+        <div class="zineHit left" id="zinePrev" aria-label="previous page"></div>
+        <div class="zineHit right" id="zineNext" aria-label="next page"></div>
+        <div class="zineHint left">←</div>
+        <div class="zineHint right">→</div>
+        <div class="zineCounter" id="zineCounter">01/20</div>
+      </div>
+
       <div class="flipPOI" id="flipPOI" aria-label="animation">
         <img class="a" alt=""
           src="https://static.wixstatic.com/media/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png/v1/fill/w_600,h_848,al_c,lg_1,q_90,enc_avif,quality_auto/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png">
@@ -756,6 +840,53 @@ into this open womb
     <!-- ✅ MOVED: canvas must be AFTER shade to be visible -->
     <canvas id="linesCanvas" aria-label="connection lines"></canvas>
   </div>
+
+  <!-- ======================================================
+       ZINE LOGIC ✅ NEW (inline)
+       ====================================================== -->
+  <script>
+  (() => {
+    const KMAP = window.KMAP;
+    const root = document.getElementById("zinePOI");
+    const img  = document.getElementById("zineImg");
+    const prev = document.getElementById("zinePrev");
+    const next = document.getElementById("zineNext");
+    const cnt  = document.getElementById("zineCounter");
+    if (!KMAP || !root || !img || !prev || !next || !cnt) return;
+
+    // ✅ adjust paths if needed
+    const ZINE_PAGES = Array.from({length:20}, (_,i)=>
+      `assets/zine/spread-${String(i+1).padStart(2,"0")}.jpg`
+    );
+
+    let index = 0;
+
+    function render(){
+      img.src = ZINE_PAGES[index];
+      cnt.textContent =
+        `${String(index+1).padStart(2,"0")}/${String(ZINE_PAGES.length).padStart(2,"0")}`;
+    }
+
+    function go(delta){
+      index = (index + delta + ZINE_PAGES.length) % ZINE_PAGES.length;
+      render();
+    }
+
+    // ✅ treat as POI target (stop map dragging)
+    KMAP.registerPOIHitTest((t) => t && (t === root || root.contains(t)));
+
+    // stop map interactions while inside the reader
+    ["pointerdown","pointermove","touchstart","touchmove","wheel"].forEach(ev=>{
+      root.addEventListener(ev, (e)=>KMAP.stop(e), {passive:true});
+    });
+
+    // click zones
+    prev.addEventListener("click", (e)=>{ e.preventDefault(); go(-1); });
+    next.addEventListener("click", (e)=>{ e.preventDefault(); go(+1); });
+
+    render();
+  })();
+  </script>
 
   <script>
   (() => {
