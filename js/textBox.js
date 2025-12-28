@@ -6,10 +6,11 @@
 const TEXT_BOXES = [
   {
     id: "text1",
-    x: 300,
-    y: 1600,
-    w: 820,
+    x: 1000,
+    y: 1000,
+    w: 420,
     h: 220,
+
     text: `
 This is a simple reading box.
 
@@ -37,11 +38,41 @@ You can scroll inside this box.
 Line breaks stay intact.
 
 Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+No animation.
+No interaction.
+Just text.
+
+You can scroll inside this box.
+Line breaks stay intact.
+
+Perfect for longer texts.
+
     `
+  },
+
+  // weitere Boxen einfach hier ergänzen
+  /*
+  {
+    id: "text2",
+    x: -400,
+    y: 120,
+    w: 360,
+    h: 260,
+    text: `Another text box`
   }
+  */
 ];
 
 function createTextBoxes(mapEl){
+
   TEXT_BOXES.forEach(cfg => {
 
     const box = document.createElement("div");
@@ -55,17 +86,9 @@ function createTextBoxes(mapEl){
     inner.className = "map-textbox-inner";
     inner.textContent = cfg.text || "";
 
-    // ✅ Scroll inside box should NOT trigger map wheel-pan
-    // capture:true => stop it early before viewport wheel handler sees it
-    inner.addEventListener("wheel", (e) => {
-      e.stopPropagation();
-    }, { passive: true, capture: true });
-
-    // ✅ On touch: allow scrolling inside box (don't start map drag)
-    // On mouse: don't block pointerdown (map drag can still start)
-    inner.addEventListener("pointerdown", (e) => {
-      if (e.pointerType === "touch") e.stopPropagation();
-    }, { passive: true });
+    /* allow scroll, block map-drag only when inside */
+    box.addEventListener("pointerdown", e => e.stopPropagation());
+    box.addEventListener("wheel", e => e.stopPropagation(), { passive:false });
 
     box.appendChild(inner);
     mapEl.appendChild(box);
