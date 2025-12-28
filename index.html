@@ -22,22 +22,20 @@
     --vh: 1vh;
   }
 
-  /* ✅ TEXTBOX (retro + always-visible scrollbar) */
+  /* ✅ FIX: textbox styles must NOT be inside :root{} */
   .map-textbox{
     position:absolute;
     background:#fff;
-    border:1px solid #000;          /* retro hard border */
+    border:1px solid rgba(0,0,0,.15);
     box-sizing:border-box;
     pointer-events:auto;
     z-index: 6;
-    border-radius: 0;               /* square */
   }
 
   .map-textbox-inner{
     height:100%;
-    overflow-y: scroll;             /* ✅ always visible */
-    padding:14px;                   /* slightly tighter, more “UI” */
-
+    overflow-y:auto;
+    padding:18px;
     font-family:"Roboto Mono", monospace;
     font-size:13px;
     line-height:1.6;
@@ -47,28 +45,6 @@
 
     /* ✅ helps touch scroll inside box even though viewport is touch-action:none */
     touch-action: pan-y;
-
-    border-radius: 0;               /* square */
-
-    /* Firefox scrollbar */
-    scrollbar-width: auto;
-    scrollbar-color: #555 #ddd;     /* thumb / track */
-  }
-
-  /* WebKit scrollbar (Chrome/Safari/Edge) */
-  .map-textbox-inner::-webkit-scrollbar{
-    width: 14px;
-  }
-  .map-textbox-inner::-webkit-scrollbar-track{
-    background: #ddd;
-    border-left: 1px solid #000;
-  }
-  .map-textbox-inner::-webkit-scrollbar-thumb{
-    background: #777;
-    border: 1px solid #000;
-  }
-  .map-textbox-inner::-webkit-scrollbar-thumb:hover{
-    background: #555;
   }
 
   html, body{
