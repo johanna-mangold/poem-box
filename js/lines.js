@@ -10,7 +10,7 @@
   ];
 
   const LINES = {
-    color: "rgba(120, 150, 165, 0.55)",
+    color: "rgba(28,1,224,1)",
 
     width: 2.2,
     dash:  [8, 16],
