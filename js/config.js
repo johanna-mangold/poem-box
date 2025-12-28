@@ -19,7 +19,13 @@
     // IMAGES
     MAP_IMAGES: [
     { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 1220, y: 40, w: 360, rot: 0, op: 1, goto: { x: -700, y: 200, zoom: 1 }},
-      {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: -700, y: 200, w: 500, rot: 0, op:1, goto: { x: 1220, y: 40, zoom: 1 }},
+      {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: -700, y: 200, w: 500, rot: 0, op:1, {
+  jumpOnHover: true,
+  jumpRange: 300,        // optional
+  jumpCooldownMs: 250,   // optional
+  jumpMinMove: 24        // optional
+}
+},
       {src:"https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png", x: -800, y: 700, w: 300, rot: 0, op: 1, href: "https://mothermountain.bandcamp.com/album/mother-mountain"}],
 
     // YOUTUBE
