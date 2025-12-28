@@ -52,6 +52,47 @@
   window.addEventListener("pointerup", onGlobalPointerUp, true);
   window.addEventListener("pointercancel", onGlobalPointerCancel, true);
 
+  // ----------------------------
+  // Jump-on-hover helpers (NEW)
+  // ----------------------------
+  function setWrapFromItem(wrap, item) {
+    const x = (item.x ?? 0);
+    const y = (item.y ?? 0);
+    const w = (item.w ?? 240);
+    const rot = (item.rot ?? 0);
+    const op = (item.op ?? 1);
+
+    wrap.style.setProperty("--x", `${x}px`);
+    wrap.style.setProperty("--y", `${y}px`);
+    wrap.style.setProperty("--w", `${w}px`);
+    wrap.style.setProperty("--rot", `${rot}deg`);
+    wrap.style.setProperty("--op", `${op}`);
+  }
+
+  function jumpItem(item, wrap) {
+    const range = Number.isFinite(item.jumpRange) ? item.jumpRange : 300;
+    const minMove = Number.isFinite(item.jumpMinMove) ? item.jumpMinMove : 24;
+
+    // Cooldown
+    const now = performance.now();
+    const cooldown = Number.isFinite(item.jumpCooldownMs) ? item.jumpCooldownMs : 250;
+    if (item._lastJumpTs && (now - item._lastJumpTs) < cooldown) return;
+
+    let dx = 0, dy = 0;
+    // Avoid tiny “jumps” that look like nothing
+    for (let i = 0; i < 12; i++) {
+      dx = (Math.random() * 2 - 1) * range;
+      dy = (Math.random() * 2 - 1) * range;
+      if (Math.abs(dx) >= minMove || Math.abs(dy) >= minMove) break;
+    }
+
+    item.x = (item.x ?? 0) + dx;
+    item.y = (item.y ?? 0) + dy;
+
+    item._lastJumpTs = now;
+    setWrapFromItem(wrap, item);
+  }
+
   function renderMapImages() {
     imageLayer.innerHTML = "";
 
@@ -62,17 +103,8 @@
       const wrap = document.createElement("div");
       wrap.className = "mapImg";
 
-      const x = (item.x ?? 0);
-      const y = (item.y ?? 0);
-      const w = (item.w ?? 240);
-      const rot = (item.rot ?? 0);
-      const op = (item.op ?? 1);
-
-      wrap.style.setProperty("--x", `${x}px`);
-      wrap.style.setProperty("--y", `${y}px`);
-      wrap.style.setProperty("--w", `${w}px`);
-      wrap.style.setProperty("--rot", `${rot}deg`);
-      wrap.style.setProperty("--op", `${op}`);
+      // existing positioning
+      setWrapFromItem(wrap, item);
 
       const img = document.createElement("img");
       img.alt = item.alt ?? "";
@@ -86,18 +118,31 @@
       const hasGoto = !!item.goto;
       const hasHref = !!item.href;
 
-      if (!hasGoto && !hasHref) {
+      // NEW: jumpOnHover should be interactive (needs pointer events)
+      const hasJump = !!item.jumpOnHover;
+
+      if (!hasGoto && !hasHref && !hasJump) {
         // non-interactive images should not interfere with pan
         wrap.style.pointerEvents = "none";
         continue;
       }
 
       wrap.style.pointerEvents = "auto";
-      wrap.style.cursor = "pointer";
+
+      // Cursor behavior: keep exactly as before for clickable items,
+      // and set pointer for jump-only so user notices it.
+      if (hasGoto || hasHref) {
+        wrap.style.cursor = "pointer";
+      } else if (hasJump) {
+        wrap.style.cursor = "pointer";
+      }
 
       // Record pointerdown, but do not block propagation;
       // map-core can still start drag if user drags.
       wrap.addEventListener("pointerdown", (e) => {
+        // IMPORTANT: only for clickables (goto/href). Jump-only images shouldn't be treated as clicks.
+        if (!hasGoto && !hasHref) return;
+
         active.set(e.pointerId, {
           item,
           downX: e.clientX ?? 0,
@@ -105,6 +150,13 @@
           downT: performance.now()
         });
       }, { passive: true });
+
+      // NEW: Jump on hover-enter (does not block map panning)
+      if (hasJump) {
+        wrap.addEventListener("pointerenter", () => {
+          jumpItem(item, wrap);
+        }, { passive: true });
+      }
     }
   }
 
