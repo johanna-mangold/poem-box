@@ -25,7 +25,7 @@
   jumpOnHover: true,
   jumpRange: 300,        // optional biiird
   jumpCooldownMs: 250,   // optional
-  jumpMinMove: 24        // optional
+  jumpMinMove: 200        // optional
 },
       {src:"https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png", x: -800, y: 700, w: 300, rot: 0, op: 1, href: "https://mothermountain.bandcamp.com/album/mother-mountain"}],
 
