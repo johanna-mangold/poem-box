@@ -30,7 +30,6 @@ Text boxes
 
 When your cursor is inside a text box, use the mouse wheel / trackpad scroll to read the text.
 
-You can still click and drag through the text box to move the map underneath.
 
 Other elements
 --------------
@@ -64,7 +63,7 @@ General notes
 
 The map has no fixed beginning or end - explore freely.
 
-Some elements respond only when you touch or hover directly over them.
+You can always teleport back to the starting point by clicking on the white dot on the bottom of the screen.
       `.trim()
     },
 
