@@ -4,7 +4,6 @@
 
   const genPOI = document.getElementById("genPOI");
   const genPoemBox = document.getElementById("genPoemBox");
-  const genResetBtn = document.getElementById("genReset");
   if (!genPOI || !genPoemBox) return;
 
   // ✅ register as POI target
@@ -38,10 +37,13 @@
   }
 
   function typeText(target, fullText){
+    // NO SKIP: while typing, ignore re-triggers
     if (isTyping) return;
+
     isTyping = true;
     clearTypeTimer();
     target.textContent = "";
+
     let i = 0;
 
     const step = () => {
@@ -61,6 +63,7 @@
   }
 
   function triggerGenerate(){
+    // NO SKIP: ignore clicks while typing
     if (isTyping) return;
 
     const poem = generatePoem({
@@ -74,22 +77,13 @@
     typeText(genPoemBox, poem);
   }
 
+  // Desktop click
   genPoemBox.addEventListener("click", triggerGenerate);
+
+  // Mobile tap: use pointerup, but don't preventDefault (so scrolling stays possible)
   genPoemBox.addEventListener("pointerup", (e) => {
     if (e.pointerType === "touch") triggerGenerate();
   });
-
-  if (genResetBtn){
-    genResetBtn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); KMAP.stop(e); }, {passive:false});
-    genResetBtn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      KMAP.stop(e);
-      clearTypeTimer();
-      isTyping = false;
-      genPoemBox.textContent = "click";
-    }, {passive:false});
-    genResetBtn.addEventListener("touchstart", (e)=>{ e.preventDefault(); KMAP.stop(e); }, {passive:false});
-  }
 
   const DET = ["the","a","this","that","these","those","my","your","our","her","his","their","no","all","every"];
   const PRON = ["i","you","we","they","me","us","them","she","he","it","who","someone","no one"];
@@ -491,4 +485,3 @@
     return out;
   }
 })();
-
