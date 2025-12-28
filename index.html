@@ -243,7 +243,7 @@
   }
 
   /* ==========================================================
-     BUILD BADGE (debug)
+     BUILD BADGE (manual build id)
      ========================================================== */
   #buildBadge{
     position: fixed;
@@ -261,16 +261,15 @@
     padding: 8px 10px;
     border-radius: 8px;
 
-    cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
 
     backdrop-filter: blur(6px);
     box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    pointer-events: none;
   }
   #buildBadge b{ color:#fff; font-weight:600; }
   #buildBadge .muted{ opacity:.65; font-size:11px; display:block; margin-top:4px; }
-  #buildBadge:active{ transform: translateY(1px); }
 
   /* ==========================================================
      REST (unchanged)
@@ -699,7 +698,7 @@
 </head>
 
 <body>
-  <div id="buildBadge" title="Click = increment • Shift+Click = reset"></div>
+  <div id="buildBadge" aria-label="build id"></div>
 
   <div id="viewport">
     <div id="world">
@@ -778,39 +777,19 @@ into this open womb
 
   <script>
   (() => {
-    // optional: change this string whenever you want a manual marker
-    const BUILD_ID = "dev";
+    // 🔥 Change this when you deploy, so you can instantly verify which version loaded.
+    const BUILD_ID = "2025-12-28_20-00";
 
     const el = document.getElementById("buildBadge");
     if (!el) return;
 
-    const KEY = "KMAP_BUILD_COUNTER_V1";
-
-    function read() {
-      const n = parseInt(localStorage.getItem(KEY) || "0", 10);
-      return Number.isFinite(n) ? n : 0;
-    }
-
-    function write(n) {
-      localStorage.setItem(KEY, String(n));
-    }
-
-    function render() {
-      const n = read();
-      const loadedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      el.innerHTML = `<b>build</b> ${BUILD_ID} · <b>#</b>${n}<span class="muted">loaded ${loadedAt}</span>`;
-    }
-
-    el.addEventListener("click", (e) => {
-      if (e.shiftKey) {
-        write(0);
-      } else {
-        write(read() + 1);
-      }
-      render();
+    const loadedAt = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
     });
 
-    render();
+    el.innerHTML = `<b>build</b> ${BUILD_ID}<span class="muted">loaded ${loadedAt}</span>`;
   })();
   </script>
 </body>
