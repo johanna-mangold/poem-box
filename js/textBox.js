@@ -13,48 +13,60 @@
       w: 420,
       h: 220,
       text: `
-This is a simple reading box.
+How to navigate this map
+-------------------------
+---------      ----------
+Desktop (Mouse / Trackpad)
+-------------------------
+Move the map
+------------
 
-No animation.
-No interaction.
-Just text.
+Click and drag anywhere to move through the map.
 
-You can scroll inside this box.
-Line breaks stay intact.
+You can also use two-finger scrolling on a trackpad.
 
-Perfect for longer texts.
-No animation.
-No interaction.
-Just text.
+Text boxes
+----------
 
-You can scroll inside this box.
-Line breaks stay intact.
+When your cursor is inside a text box, use the mouse wheel / trackpad scroll to read the text.
 
-Perfect for longer texts.
-No animation.
-No interaction.
-Just text.
+You can still click and drag through the text box to move the map underneath.
 
-You can scroll inside this box.
-Line breaks stay intact.
+Other elements
+--------------
 
-Perfect for longer texts.
-No animation.
-No interaction.
-Just text.
+Some elements react to hover or clicks.
 
-You can scroll inside this box.
-Line breaks stay intact.
+If something doesn’t move, try dragging slightly outside of it.
 
-Perfect for longer texts.
-No animation.
-No interaction.
-Just text.
+Tablet / Touch devices
+----------------------
 
-You can scroll inside this box.
-Line breaks stay intact.
+Move the map
+------------
 
-Perfect for longer texts.
+Drag with one finger anywhere on the map to move.
+
+Text boxes
+-----------
+
+Swipe inside a text box to scroll its content.
+
+Swipe outside the text box to move the map.
+
+Tip
+----
+
+If scrolling feels “stuck”, lift your finger and try again slightly inside or outside the box.
+
+General notes
+-------------
+
+The map has no fixed beginning or end — explore freely.
+
+Text boxes are meant for reading, not interaction.
+
+Some elements respond only when you touch or hover directly over them.
       `.trim()
     },
 
