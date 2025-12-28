@@ -1,4 +1,4 @@
- (() => {
+(() => {
   const KMAP = window.KMAP;
   if (!KMAP) return;
 
@@ -14,33 +14,36 @@
 
   let lastJumpTs = 0;
 
-  function getXY(){
-    // flipPOI muss (wie bei deinen anderen POIs) über CSS vars positioniert sein:
-    // --x / --y in px
+  function getLT() {
+    // Prefer inline style if present, otherwise computed style
     const cs = getComputedStyle(flipEl);
-    const x = parseFloat(cs.getPropertyValue("--x")) || 0;
-    const y = parseFloat(cs.getPropertyValue("--y")) || 0;
-    return { x, y };
+
+    const left = parseFloat(flipEl.style.left || cs.left) || 0;
+    const top  = parseFloat(flipEl.style.top  || cs.top)  || 0;
+
+    return { left, top };
   }
 
-  function setXY(x, y){
-    flipEl.style.setProperty("--x", `${x}px`);
-    flipEl.style.setProperty("--y", `${y}px`);
+  function setLT(left, top) {
+    flipEl.style.left = `${left}px`;
+    flipEl.style.top  = `${top}px`;
   }
 
-  function jump(){
+  function jump() {
     const now = performance.now();
     if ((now - lastJumpTs) < JUMP_COOLDOWN_MS) return;
 
     let dx = 0, dy = 0;
-    for (let i = 0; i < 12; i++){
+
+    // avoid tiny jumps
+    for (let i = 0; i < 12; i++) {
       dx = (Math.random() * 2 - 1) * JUMP_RANGE;
       dy = (Math.random() * 2 - 1) * JUMP_RANGE;
       if (Math.abs(dx) >= JUMP_MIN_MOVE || Math.abs(dy) >= JUMP_MIN_MOVE) break;
     }
 
-    const p = getXY();
-    setXY(p.x + dx, p.y + dy);
+    const p = getLT();
+    setLT(p.left + dx, p.top + dy);
 
     lastJumpTs = now;
   }
