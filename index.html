@@ -22,53 +22,66 @@
     --vh: 1vh;
   }
 
-  /* ✅ TEXTBOX (retro + always-visible scrollbar) */
+  /* =========================================================
+     TEXTBOX – retro, safe for map interaction (UPDATED)
+     ========================================================= */
+
+  /* äußere Box:
+     - sichtbar
+     - blockiert KEINE Pointer-Events
+     - Map bleibt immer draggable */
   .map-textbox{
     position:absolute;
     background:#fff;
-    border:1px solid #000;          /* retro hard border */
+    border:1px solid #000;
     box-sizing:border-box;
-    pointer-events:auto;
     z-index: 6;
-    border-radius: 0;               /* square */
+    border-radius: 0;
+
+    pointer-events: none; /* extrem wichtig */
   }
 
+  /* innerer Scrollbereich:
+     - nimmt Events an
+     - erlaubt Scroll
+     - Retro Scrollbar */
   .map-textbox-inner{
     height:100%;
-    overflow-y: scroll;             /* ✅ always visible */
-    padding:14px;                   /* slightly tighter, more “UI” */
+    overflow-y: scroll;        /* immer sichtbare Scrollbar */
+    padding:14px;
 
     font-family:"Roboto Mono", monospace;
     font-size:13px;
     line-height:1.6;
     color:#000;
     white-space:pre-wrap;
-    -webkit-overflow-scrolling:touch;
 
-    /* ✅ helps touch scroll inside box even though viewport is touch-action:none */
+    -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
 
-    border-radius: 0;               /* square */
+    border-radius: 0;
 
-    /* Firefox scrollbar */
+    pointer-events: auto;      /* nur hier Interaktion */
+
+    /* Firefox */
     scrollbar-width: auto;
-    scrollbar-color: #555 #ddd;     /* thumb / track */
+    scrollbar-color: #555 #ddd;
   }
 
-  /* WebKit scrollbar (Chrome/Safari/Edge) */
+  /* WebKit Scrollbar (Chrome/Safari/Edge) */
   .map-textbox-inner::-webkit-scrollbar{
-    width: 14px;
+    width:14px;
   }
   .map-textbox-inner::-webkit-scrollbar-track{
-    background: #ddd;
-    border-left: 1px solid #000;
+    background:#ddd;
+    border-left:1px solid #000;
   }
   .map-textbox-inner::-webkit-scrollbar-thumb{
-    background: #777;
-    border: 1px solid #000;
+    background:#777;
+    border:1px solid #000;
   }
   .map-textbox-inner::-webkit-scrollbar-thumb:hover{
-    background: #555;
+    background:#555;
   }
 
   html, body{
