@@ -313,6 +313,33 @@
   }
   .zineHint.left{ left:14px; }
   .zineHint.right{ right:14px; }
+    /* ZINE LABELS (zine / click) */
+  .zineLabel{
+    position:absolute;
+    top:8px;
+
+    font-family:"Roboto Mono", monospace;
+    font-size:12px;
+    line-height:1;
+
+    color:#fff;
+    opacity:.55;
+
+    pointer-events:none; /* stört Klicks nicht */
+    user-select:none;
+    -webkit-user-select:none;
+
+    text-shadow: 0 0 8px rgba(0,0,0,.6);
+  }
+
+  .zineLabel.left{
+    left:10px;
+  }
+
+  .zineLabel.right{
+    right:10px;
+  }
+
 
   /* ==========================================================
      BUILD BADGE (manual build id)
