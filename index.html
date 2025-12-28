@@ -248,8 +248,8 @@
 
   .zinePOI{
     position:absolute;
-    left: 1200px;
-    top:  -300px;
+    left: -600px;
+    top:  0px;
 
     width: 980px;      /* passt du ggf an */
     height: 640px;     /* passt du ggf an */
@@ -855,8 +855,10 @@ into this open womb
     if (!KMAP || !root || !img || !prev || !next || !cnt) return;
 
     // ✅ adjust paths if needed
-    const ZINE_PAGES = Array.from({length:20}, (_,i)=>
-      `assets/zine/spread-${String(i+1).padStart(2,"0")}.jpg`
+    const ZINE_PAGES = ["https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png",
+                       "https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png",
+                       https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png",
+                        https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png"]
     );
 
     let index = 0;
