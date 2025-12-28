@@ -22,20 +22,22 @@
     --vh: 1vh;
   }
 
-  /* ✅ FIX: textbox styles must NOT be inside :root{} */
+  /* ✅ TEXTBOX (retro + always-visible scrollbar) */
   .map-textbox{
     position:absolute;
     background:#fff;
-    border:1px solid rgba(0,0,0,.15);
+    border:1px solid #000;          /* retro hard border */
     box-sizing:border-box;
     pointer-events:auto;
     z-index: 6;
+    border-radius: 0;               /* square */
   }
 
   .map-textbox-inner{
     height:100%;
-    overflow-y:auto;
-    padding:18px;
+    overflow-y: scroll;             /* ✅ always visible */
+    padding:14px;                   /* slightly tighter, more “UI” */
+
     font-family:"Roboto Mono", monospace;
     font-size:13px;
     line-height:1.6;
@@ -45,6 +47,28 @@
 
     /* ✅ helps touch scroll inside box even though viewport is touch-action:none */
     touch-action: pan-y;
+
+    border-radius: 0;               /* square */
+
+    /* Firefox scrollbar */
+    scrollbar-width: auto;
+    scrollbar-color: #555 #ddd;     /* thumb / track */
+  }
+
+  /* WebKit scrollbar (Chrome/Safari/Edge) */
+  .map-textbox-inner::-webkit-scrollbar{
+    width: 14px;
+  }
+  .map-textbox-inner::-webkit-scrollbar-track{
+    background: #ddd;
+    border-left: 1px solid #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-thumb{
+    background: #777;
+    border: 1px solid #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-thumb:hover{
+    background: #555;
   }
 
   html, body{
@@ -143,11 +167,11 @@
     pointer-events:none;
   }
 
-  /* LINES */
+  /* LINES (✅ updated: must sit above shade/grid) */
   #linesCanvas{
     position:absolute;
     inset:0;
-    z-index: 3;
+    z-index: 2147483646;
     pointer-events:none;
   }
 
@@ -299,9 +323,9 @@
   /* P5 GAME */
   .p5POI{
     position:absolute;
-    left: 680px;
-    top:  120px;
-    width: 520px;
+    left: 2000px;
+    top:  -1000px;
+    width: 820px;
     height: 520px;
 
     pointer-events:auto;
@@ -398,8 +422,8 @@
   /* AUTO POEM (mutating/freeze system) */
   .autoPOI{
     position:absolute;
-    left: -1040px;  /* X -> anpassen */
-    top:  -600px;   /* Y -> anpassen */
+    left: -1040px;
+    top:  -600px;
     width: 360px;
     height: 360px;
     pointer-events:auto;
@@ -455,7 +479,6 @@
 <script defer src="./js/gen-poem.js"></script>
 <script defer src="./js/coords.js"></script>
 
-
 <!-- ✅ FIX: path consistent with your other JS files -->
 <script defer src="./js/textBox.js"></script>
 
@@ -472,8 +495,6 @@
 
 <body>
   <div id="viewport">
-    <canvas id="linesCanvas" aria-label="connection lines"></canvas>
-
     <div id="world">
       <div class="node" style="left:0px; top:0px;">start (0,0)</div>
       <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
@@ -543,6 +564,9 @@ into this open womb
 
     <div id="grid"></div>
     <div id="shade"></div>
+
+    <!-- ✅ MOVED: canvas must be AFTER shade to be visible -->
+    <canvas id="linesCanvas" aria-label="connection lines"></canvas>
   </div>
 </body>
 </html>
