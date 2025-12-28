@@ -42,7 +42,6 @@ Perfect for longer texts.
 ];
 
 function createTextBoxes(mapEl){
-
   TEXT_BOXES.forEach(cfg => {
 
     const box = document.createElement("div");
@@ -56,14 +55,17 @@ function createTextBoxes(mapEl){
     inner.className = "map-textbox-inner";
     inner.textContent = cfg.text || "";
 
-    // ✅ Allow scrolling inside the box without triggering map wheel-pan
-    // Do NOT preventDefault (lets native scroll happen)
+    // ✅ Scroll inside box should NOT trigger map wheel-pan
+    // capture:true => stop it early before viewport wheel handler sees it
     inner.addEventListener("wheel", (e) => {
       e.stopPropagation();
-    }, { passive: true });
+    }, { passive: true, capture: true });
 
-    // ✅ Touch: allow inner scrolling; keep map drag working otherwise
-    // (No stopPropagation on pointerdown here, otherwise map becomes “dead” over the box)
+    // ✅ On touch: allow scrolling inside box (don't start map drag)
+    // On mouse: don't block pointerdown (map drag can still start)
+    inner.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch") e.stopPropagation();
+    }, { passive: true });
 
     box.appendChild(inner);
     mapEl.appendChild(box);
