@@ -4,7 +4,7 @@
   window.KMAP.config = {
     // CONNECTION LINES
     CONNECTIONS: [
-      { id:"l1", pts: [ [0,0], [-245,-132],[-178,-552] ] },
+      { id:"l1", pts: [ [0,0], [-245,-132],[-88,-1025] ] },
       { id:"l2", pts: [ [420,-30], [680,120], [1220,40] ] },
     ],
     LINES: {
