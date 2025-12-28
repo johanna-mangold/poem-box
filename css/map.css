@@ -7,7 +7,7 @@
   --vh: 1vh;
 }
 
-/* ✅ FIX: textbox styles must NOT be inside :root{} */
+/* TEXT BOX */
 .map-textbox{
   position:absolute;
   background:#fff;
@@ -16,7 +16,6 @@
   pointer-events:auto;
   z-index: 6;
 }
-
 .map-textbox-inner{
   height:100%;
   overflow-y:auto;
@@ -116,6 +115,245 @@ body{
     rgba(0,0,0,.7) 100%);
 }
 
-/* … */
-/* (der Rest bleibt ebenfalls exakt gleich – 
-   alles aus deinem <style>-Block hier rein kopieren) */
+/* NODES */
+.node{
+  position:absolute;
+  color:#fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity:.95;
+  max-width: 340px;
+  user-select:none;
+  -webkit-user-select:none;
+  pointer-events:none;
+}
+
+/* LINES */
+#linesCanvas{
+  position:absolute;
+  inset:0;
+  z-index: 2147483646;
+  pointer-events:none;
+}
+
+/* IMAGES */
+#imageLayer{
+  position:absolute;
+  left:0; top:0;
+  width:0; height:0;
+  pointer-events:none;
+  z-index: 1;
+}
+.mapImg{
+  position:absolute;
+  left:0; top:0;
+  transform: translate3d(var(--x), var(--y), 0) rotate(var(--rot));
+  transform-origin: center center;
+  opacity: var(--op);
+  will-change: transform;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,.35));
+}
+.mapImg img{
+  display:block;
+  width: var(--w);
+  height: auto;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+/* YOUTUBE */
+#videoLayer{
+  position:absolute;
+  left:0; top:0;
+  width:0; height:0;
+  pointer-events:none;
+  z-index: 4;
+}
+.mapVideo{
+  position:absolute;
+  left:0; top:0;
+  transform: translate3d(var(--x), var(--y), 0) rotate(var(--rot));
+  transform-origin: center center;
+  opacity: var(--op);
+  width: var(--w);
+  height: var(--h);
+  will-change: transform;
+  filter: drop-shadow(0 0 12px rgba(0,0,0,.45));
+  pointer-events:auto;
+}
+.mapVideo iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#000;
+  pointer-events:auto;
+}
+
+/* FLIPBOOK */
+.flipPOI{
+  position:absolute;
+  left: 420px;
+  top:  -30px;
+  width: 160px;
+  aspect-ratio: 848 / 1200;
+  pointer-events:auto;
+  cursor: pointer;
+  user-select:none;
+  -webkit-user-drag:none;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,.45));
+  touch-action: manipulation;
+  z-index: 5;
+}
+.flipPOI img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: contain;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
+  pointer-events:none;
+}
+.flipPOI img.a{ opacity: 1; }
+.flipPOI img.b{ opacity: 0; }
+
+@keyframes flipA{
+  0%,49.9%{opacity:1}
+  50%,100%{opacity:0}
+}
+@keyframes flipB{
+  0%,49.9%{opacity:0}
+  50%,100%{opacity:1}
+}
+.flipPOI:hover img.a,
+.flipPOI.isAnimating img.a{ animation: flipA 520ms steps(1,end) infinite; }
+.flipPOI:hover img.b,
+.flipPOI.isAnimating img.b{ animation: flipB 520ms steps(1,end) infinite; }
+.flipPOI:not(:hover):not(.isAnimating) img{ animation:none!important; }
+
+/* POEM DISTORT */
+.poemPOI{
+  position:absolute;
+  left:40px;
+  top:32px;
+  pointer-events:none;
+  z-index:5;
+}
+#poem{
+  pointer-events:auto;
+  display:inline-block;
+  font-family:"Roboto Mono", monospace;
+  font-size:13px;
+  line-height:1.25;
+  letter-spacing:.01em;
+  color:#fff;
+  white-space:pre-wrap;
+  user-select:none;
+  text-shadow:0 0 10px rgba(0,0,0,.55);
+  max-width:clamp(360px,70vw,980px);
+}
+.w{
+  display:inline-block;
+  will-change: transform, opacity;
+  transition: transform 70ms linear, opacity 170ms linear;
+}
+@media (pointer: coarse){
+  .w{ filter:none!important; }
+}
+
+/* P5 GAME */
+.p5POI{
+  position:absolute;
+  left:2000px;
+  top:-1000px;
+  width:820px;
+  height:520px;
+  pointer-events:auto;
+  touch-action:none;
+  user-select:none;
+  z-index:5;
+}
+.p5POI canvas{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+}
+.p5Reset{
+  position:absolute;
+  left:50%;
+  bottom:-14px;
+  transform:translateX(-50%);
+  width:12px;
+  height:12px;
+  border-radius:999px;
+  background:#fff;
+  opacity:.88;
+  cursor:pointer;
+  box-shadow:0 0 0 6px rgba(255,255,255,.1),0 0 14px rgba(255,255,255,.22);
+}
+
+/* GENERATOR */
+.genPOI{
+  position:absolute;
+  left:-600px;
+  top:-600px;
+  width:360px;
+  height:360px;
+  pointer-events:auto;
+  z-index:5;
+}
+.genBox{
+  width:100%;
+  height:100%;
+  padding:22px;
+  font-size:13px;
+  line-height:1.35;
+  color:#fff;
+  background:transparent;
+  text-shadow:0 0 10px rgba(0,0,0,.55);
+  white-space:pre-wrap;
+  cursor:pointer;
+}
+.genReset{
+  position:absolute;
+  left:50%;
+  bottom:-14px;
+  transform:translateX(-50%);
+  width:12px;
+  height:12px;
+  border-radius:999px;
+  background:#fff;
+  opacity:.55;
+}
+
+/* AUTO POEM */
+.autoPOI{
+  position:absolute;
+  left:-1040px;
+  top:-600px;
+  width:360px;
+  height:360px;
+  pointer-events:auto;
+  z-index:5;
+}
+.autoBox{
+  width:100%;
+  height:100%;
+  padding:22px;
+  font-size:13px;
+  line-height:1.35;
+  color:#fff;
+  background:transparent;
+  white-space:pre-wrap;
+  text-shadow:0 0 10px rgba(0,0,0,.55);
+}
+.autoStatus{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  font-size:11px;
+  opacity:.35;
+}
