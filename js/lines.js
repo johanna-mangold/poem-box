@@ -10,9 +10,10 @@
   ];
 
   const LINES = {
-    color: "rgba(255,255,255,0.90)",
+    color: "rgba(120, 150, 165, 0.55)",
+
     width: 2.2,
-    dash:  [10, 10],
+    dash:  [8, 16],
     cap:   "round",
     join:  "round",
     dashScaleWithZoom: false,
