@@ -1,133 +1,123 @@
 // lines.js
 (() => {
   // =========================
-  // 1) EDIT ONLY HERE
+  // EDIT HERE
   // =========================
   const CONNECTIONS = [
-    { id: "l1", pts: [[0, 0], [200, 120], [420, -30]] },
-    { id: "l2", pts: [[420, -30], [680, 120], [1220, 40]] },
-    // { id:"l3", pts: [[900,-420],[1220,40]] },
+    { id:"l1", pts: [ [0,0], [200,120], [420,-30] ] },
+    { id:"l2", pts: [ [420,-30], [680,120], [1220,40] ] },
+    // { id:"l3", pts: [ [900,-420], [1220,40] ] },
   ];
 
   const LINES = {
-    color: "rgba(255,255,255,0.92)", // etwas stärker -> sicher sichtbar
-    width: 2.2,                      // etwas dicker -> sicher sichtbar
-    dash: [10, 10],
-    cap: "round",
-    join: "round",
+    color: "rgba(255,255,255,0.90)",
+    width: 2.2,
+    dash:  [10, 10],
+    cap:   "round",
+    join:  "round",
     dashScaleWithZoom: false,
-
-    // Debug: zeigt roten Block oben links, um zu checken ob Canvas sichtbar ist
     debug: false
   };
 
   // =========================
-  // 2) FIND / CREATE CANVAS
+  // DOM
   // =========================
   const viewport = document.getElementById("viewport");
-  if (!viewport) {
-    console.warn("[lines.js] #viewport not found.");
-    return;
-  }
+  if (!viewport) return;
 
   let canvas = document.getElementById("linesCanvas");
   if (!canvas) {
     canvas = document.createElement("canvas");
     canvas.id = "linesCanvas";
-    viewport.appendChild(canvas); // ✅ am Ende -> über shade
-  } else {
-    // ✅ sicherstellen: Canvas ist wirklich das letzte Child (über shade)
     viewport.appendChild(canvas);
   }
 
-  // ✅ harte Styles, damit nix drüber liegt
+  // ✅ wichtig: Canvas ganz oben (über shade) – safe, auch wenn HTML Reihenfolge anders ist
+  viewport.appendChild(canvas);
+
   Object.assign(canvas.style, {
     position: "absolute",
     inset: "0",
     width: "100%",
     height: "100%",
     pointerEvents: "none",
-    zIndex: "2147483646" // knapp unter deinem Home-Button (der hat 2147483647)
+    zIndex: "2147483646"
   });
 
   const ctx = canvas.getContext("2d", { alpha: true });
 
   // =========================
-  // 3) TRANSFORM
+  // STATE: wir merken uns den letzten Transform
   // =========================
-  const getTransform = () => window.__MAP_TRANSFORM__ || { x: 0, y: 0, scale: 1 };
+  let TR = { x: 0, y: 0, scale: 1 };
 
-  const worldToScreen = (wx, wy) => {
-    const t = getTransform();
-    return { x: wx * t.scale + t.x, y: wy * t.scale + t.y };
-  };
+  // World->Screen mit aktuellem Transform
+  function worldToScreen(wx, wy){
+    const s = TR.scale ?? 1;
+    return { x: wx * s + TR.x, y: wy * s + TR.y };
+  }
 
   // =========================
-  // 4) RESIZE (Wix-safe)
+  // RESIZE
   // =========================
-  function resize() {
+  function resize(){
     const r = viewport.getBoundingClientRect();
     const w = Math.max(1, Math.round(r.width));
     const h = Math.max(1, Math.round(r.height));
-
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width  = w + "px";
+    canvas.style.height = h + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     draw();
   }
 
-  // Wix/Embed: oft ist beim ersten Tick noch 0x0 -> retries helfen enorm
   resize();
   setTimeout(resize, 50);
   setTimeout(resize, 250);
-  setTimeout(resize, 800);
+  setTimeout(resize, 900);
 
-  // ResizeObserver auf viewport (best)
-  if ("ResizeObserver" in window) {
-    const ro = new ResizeObserver(() => resize());
-    ro.observe(viewport);
-  }
+  if ("ResizeObserver" in window) new ResizeObserver(resize).observe(viewport);
   window.addEventListener("resize", resize, { passive: true });
   if (window.visualViewport) window.visualViewport.addEventListener("resize", resize, { passive: true });
 
   // =========================
-  // 5) DRAW
+  // DRAW
   // =========================
-  function draw() {
+  function draw(){
     const r = viewport.getBoundingClientRect();
     const w = Math.max(1, r.width);
     const h = Math.max(1, r.height);
     ctx.clearRect(0, 0, w, h);
 
-    if (LINES.debug) {
+    if (LINES.debug){
       ctx.fillStyle = "rgba(255,0,0,0.35)";
-      ctx.fillRect(10, 10, 140, 44);
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.fillRect(10,10,220,46);
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.font = "12px Roboto Mono, monospace";
-      ctx.fillText("lines canvas", 18, 38);
+      ctx.fillText(`TR x:${TR.x.toFixed(0)} y:${TR.y.toFixed(0)}`, 18, 38);
     }
 
     ctx.strokeStyle = LINES.color;
-    ctx.lineWidth = LINES.width;
-    ctx.lineCap = LINES.cap;
-    ctx.lineJoin = LINES.join;
+    ctx.lineWidth   = LINES.width;
+    ctx.lineCap     = LINES.cap;
+    ctx.lineJoin    = LINES.join;
 
-    const scale = getTransform().scale || 1;
+    const scale = TR.scale ?? 1;
     const dash = LINES.dashScaleWithZoom ? LINES.dash.map(v => v * scale) : LINES.dash;
     ctx.setLineDash(dash);
 
-    for (const c of CONNECTIONS) {
+    for (const c of CONNECTIONS){
       if (!c?.pts || c.pts.length < 2) continue;
 
       ctx.beginPath();
       const p0 = worldToScreen(c.pts[0][0], c.pts[0][1]);
       ctx.moveTo(p0.x, p0.y);
 
-      for (let i = 1; i < c.pts.length; i++) {
+      for (let i=1; i<c.pts.length; i++){
         const p = worldToScreen(c.pts[i][0], c.pts[i][1]);
         ctx.lineTo(p.x, p.y);
       }
@@ -138,23 +128,34 @@
   }
 
   // =========================
-  // 6) REDRAW TRIGGERS
+  // HOOK INTO KMAP (THIS is the important part)
   // =========================
-  // A) wenn map-core ein Event dispatcht (empfohlen)
-  window.addEventListener("map:transform", () => draw());
+  function hook(){
+    const KMAP = window.KMAP;
+    if (!KMAP || typeof KMAP.onApply !== "function") return false;
 
-  // B) fallback: wenn kein Event kommt, redraw per RAF nur bei Änderungen
-  let last = { x: null, y: null, s: null };
-  function tick() {
-    const t = getTransform();
-    if (t.x !== last.x || t.y !== last.y || t.scale !== last.s) {
-      last = { x: t.x, y: t.y, s: t.scale };
+    // ✅ initial transform übernehmen, falls schon vorhanden
+    if (KMAP.transform) TR = { ...TR, ...KMAP.transform };
+
+    // ✅ bei JEDEM applyTransform: Transform updaten + redraw
+    KMAP.onApply((t) => {
+      if (t && isFinite(t.x) && isFinite(t.y)) TR = { ...TR, ...t };
       draw();
-    }
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+    });
 
-  // Optional: global, falls du manuell triggern willst
+    // einmal sofort zeichnen
+    draw();
+    return true;
+  }
+
+  if (!hook()){
+    // load-order fallback
+    const t0 = performance.now();
+    const timer = setInterval(() => {
+      if (hook() || (performance.now() - t0) > 5000) clearInterval(timer);
+    }, 50);
+  }
+
+  // Optional: manuelles redraw
   window.redrawConnectionLines = draw;
 })();
