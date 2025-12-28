@@ -143,11 +143,11 @@
     pointer-events:none;
   }
 
-  /* LINES (✅ updated: must sit above shade/grid) */
+  /* LINES */
   #linesCanvas{
     position:absolute;
     inset:0;
-    z-index: 2147483646;
+    z-index: 3;
     pointer-events:none;
   }
 
@@ -398,8 +398,8 @@
   /* AUTO POEM (mutating/freeze system) */
   .autoPOI{
     position:absolute;
-    left: -1040px;
-    top:  -600px;
+    left: -1040px;  /* X -> anpassen */
+    top:  -600px;   /* Y -> anpassen */
     width: 360px;
     height: 360px;
     pointer-events:auto;
@@ -455,6 +455,7 @@
 <script defer src="./js/gen-poem.js"></script>
 <script defer src="./js/coords.js"></script>
 
+
 <!-- ✅ FIX: path consistent with your other JS files -->
 <script defer src="./js/textBox.js"></script>
 
@@ -471,6 +472,8 @@
 
 <body>
   <div id="viewport">
+    <canvas id="linesCanvas" aria-label="connection lines"></canvas>
+
     <div id="world">
       <div class="node" style="left:0px; top:0px;">start (0,0)</div>
       <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
@@ -540,9 +543,6 @@ into this open womb
 
     <div id="grid"></div>
     <div id="shade"></div>
-
-    <!-- ✅ MOVED: canvas must be AFTER shade to be visible -->
-    <canvas id="linesCanvas" aria-label="connection lines"></canvas>
   </div>
 </body>
 </html>
