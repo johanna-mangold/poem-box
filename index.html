@@ -22,30 +22,229 @@
     --vh: 1vh;
   }
 
-  /* ✅ FIX: textbox styles must NOT be inside :root{} */
+  /* ==========================================================
+     TEXTBOX (90s WINDOWS STYLE)
+     ========================================================== */
+
+  /* Window frame */
   .map-textbox{
     position:absolute;
-    background:#fff;
-    border:1px solid rgba(0,0,0,.15);
     box-sizing:border-box;
     pointer-events:auto;
     z-index: 6;
+
+    font-family:"Roboto Mono", monospace;
+
+    /* Win95-ish bevel frame */
+    background:#c0c0c0;
+    border:2px solid #c0c0c0;
+    border-top-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#404040;
+    border-bottom-color:#404040;
+
+    /* inner black hairline */
+    box-shadow:
+      inset 0 0 0 1px #000000,
+      0 0 0 1px rgba(0,0,0,.35);
   }
 
+  /* Title bar */
+  .map-textbox-title{
+    height: 26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+
+    padding: 0 6px 0 8px;
+    box-sizing:border-box;
+
+    /* Windows 95 blue title bar */
+    background: linear-gradient(90deg, #000080 0%, #0000ff 45%, #000080 100%);
+    color:#ffffff;
+
+    font-size:12px;
+    line-height:1;
+    user-select:none;
+    -webkit-user-select:none;
+
+    border-bottom: 1px solid #000;
+  }
+  .map-textbox-title .ttl{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+  .map-textbox-title .ttlText{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* Title buttons (Win95 style) */
+  .map-textbox-btns{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex: 0 0 auto;
+  }
+  .map-textbox-btn{
+    width:18px;
+    height:18px;
+    display:grid;
+    place-items:center;
+
+    background:#c0c0c0;
+
+    border:2px solid #c0c0c0;
+    border-top-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#404040;
+    border-bottom-color:#404040;
+
+    box-shadow: inset 0 0 0 1px #000000;
+
+    padding:0;
+    cursor:pointer;
+
+    font-family:"Roboto Mono", monospace;
+    font-size:12px;
+    line-height:1;
+    color:#000;
+  }
+  .map-textbox-btn:active{
+    border-top-color:#404040;
+    border-left-color:#404040;
+    border-right-color:#ffffff;
+    border-bottom-color:#ffffff;
+    transform: translateY(1px);
+  }
+
+  /* Client area */
+  .map-textbox-body{
+    height: calc(100% - 26px);
+    box-sizing:border-box;
+    padding: 8px;
+
+    /* slight "old UI" dither vibe */
+    background:
+      linear-gradient(0deg, rgba(255,255,255,.06), rgba(255,255,255,.06)),
+      repeating-linear-gradient(45deg,
+        rgba(0,0,0,.04) 0,
+        rgba(0,0,0,.04) 2px,
+        rgba(255,255,255,.02) 2px,
+        rgba(255,255,255,.02) 4px
+      ),
+      #c0c0c0;
+  }
+
+  /* Text area (your requested colors) */
   .map-textbox-inner{
     height:100%;
     overflow-y:auto;
-    padding:18px;
+    padding: 14px 14px;
+    box-sizing:border-box;
+
     font-family:"Roboto Mono", monospace;
     font-size:13px;
-    line-height:1.6;
-    color:#000;
+    line-height:1.55;
+
+    /* 90s neon */
+    background:#0000ff; /* knallblau */
+    color:#ff00ff;      /* knallpink */
+
     white-space:pre-wrap;
     -webkit-overflow-scrolling:touch;
 
-    /* ✅ helps touch scroll inside box even though viewport is touch-action:none */
+    /* allow touch scroll even though viewport is touch-action:none */
     touch-action: pan-y;
+
+    /* inset "screen" border */
+    border:2px solid #000;
+    border-top-color:#404040;
+    border-left-color:#404040;
+    border-right-color:#ffffff;
+    border-bottom-color:#ffffff;
+
+    /* CRT-ish glow (subtle) */
+    text-shadow: 0 0 6px rgba(255,0,255,.35);
   }
+
+  /* Retro scrollbar (WebKit/Blink) */
+  .map-textbox-inner::-webkit-scrollbar{
+    width: 16px;
+  }
+  .map-textbox-inner::-webkit-scrollbar-track{
+    background:#c0c0c0;
+    border-left: 1px solid #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-thumb{
+    background:#c0c0c0;
+    border:2px solid #c0c0c0;
+    border-top-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#404040;
+    border-bottom-color:#404040;
+    box-shadow: inset 0 0 0 1px #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-button:single-button{
+    display:block;
+    height: 16px;
+    background:#c0c0c0;
+    border:2px solid #c0c0c0;
+    border-top-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#404040;
+    border-bottom-color:#404040;
+    box-shadow: inset 0 0 0 1px #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-button:single-button:vertical:decrement{
+    background:
+      linear-gradient(45deg, transparent 45%, #000 45%, #000 55%, transparent 55%),
+      #c0c0c0;
+    background-size: 10px 10px, auto;
+    background-position: center, center;
+    background-repeat:no-repeat;
+  }
+  .map-textbox-inner::-webkit-scrollbar-button:single-button:vertical:increment{
+    background:
+      linear-gradient(-45deg, transparent 45%, #000 45%, #000 55%, transparent 55%),
+      #c0c0c0;
+    background-size: 10px 10px, auto;
+    background-position: center, center;
+    background-repeat:no-repeat;
+  }
+
+  /* Firefox scrollbar */
+  .map-textbox-inner{
+    scrollbar-width: auto;
+    scrollbar-color: #c0c0c0 #c0c0c0;
+  }
+
+  /* optional little corner grip (purely decorative) */
+  .map-textbox-grip{
+    position:absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 14px;
+    height: 14px;
+    pointer-events:none;
+    opacity: .75;
+    background:
+      repeating-linear-gradient(135deg,
+        rgba(0,0,0,.35) 0,
+        rgba(0,0,0,.35) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  }
+
+  /* ==========================================================
+     REST (unchanged)
+     ========================================================== */
 
   html, body{
     margin:0;
