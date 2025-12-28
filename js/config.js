@@ -21,7 +21,7 @@
     { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 3000, y: 1500, w: 300, rot: 0, op: 1, goto: { x: -700, y: -900, zoom: 1 }},   // red blob
       {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: -700, y: 200, w: 200, rot: 0, op:1,    //wandobjekt homeflesh
 },
-      {src:"https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png", x: 700, y: 200, w: 300, rot: 0, op:1,
+      {src:"https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png", x: -870, y: -670, w: 300, rot: 0, op:1,
   jumpOnHover: true,
   jumpRange: 300,        // optional biiird
   jumpCooldownMs: 250,   // optional
