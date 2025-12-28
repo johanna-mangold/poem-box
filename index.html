@@ -243,6 +243,36 @@
   }
 
   /* ==========================================================
+     BUILD BADGE (debug)
+     ========================================================== */
+  #buildBadge{
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    z-index: 2147483647;
+
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    line-height: 1;
+
+    background: rgba(0,0,0,.65);
+    color: #00ff90;
+    border: 1px solid rgba(255,255,255,.22);
+    padding: 8px 10px;
+    border-radius: 8px;
+
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  #buildBadge b{ color:#fff; font-weight:600; }
+  #buildBadge .muted{ opacity:.65; font-size:11px; display:block; margin-top:4px; }
+  #buildBadge:active{ transform: translateY(1px); }
+
+  /* ==========================================================
      REST (unchanged)
      ========================================================== */
 
@@ -669,6 +699,8 @@
 </head>
 
 <body>
+  <div id="buildBadge" title="Click = increment • Shift+Click = reset"></div>
+
   <div id="viewport">
     <div id="world">
       <div class="node" style="left:0px; top:0px;">start (0,0)</div>
@@ -743,5 +775,43 @@ into this open womb
     <!-- ✅ MOVED: canvas must be AFTER shade to be visible -->
     <canvas id="linesCanvas" aria-label="connection lines"></canvas>
   </div>
+
+  <script>
+  (() => {
+    // optional: change this string whenever you want a manual marker
+    const BUILD_ID = "dev";
+
+    const el = document.getElementById("buildBadge");
+    if (!el) return;
+
+    const KEY = "KMAP_BUILD_COUNTER_V1";
+
+    function read() {
+      const n = parseInt(localStorage.getItem(KEY) || "0", 10);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function write(n) {
+      localStorage.setItem(KEY, String(n));
+    }
+
+    function render() {
+      const n = read();
+      const loadedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      el.innerHTML = `<b>build</b> ${BUILD_ID} · <b>#</b>${n}<span class="muted">loaded ${loadedAt}</span>`;
+    }
+
+    el.addEventListener("click", (e) => {
+      if (e.shiftKey) {
+        write(0);
+      } else {
+        write(read() + 1);
+      }
+      render();
+    });
+
+    render();
+  })();
+  </script>
 </body>
 </html>
