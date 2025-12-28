@@ -69,6 +69,16 @@
     wrap.style.setProperty("--op", `${op}`);
   }
 
+  // NEW: apply flip state to the <img> inside wrap (no CSS changes needed)
+  function applyFlipFromItem(wrap, item) {
+    const imgEl = wrap.querySelector("img");
+    if (!imgEl) return;
+
+    const flip = (item._flipX === -1) ? -1 : 1;
+    imgEl.style.transformOrigin = "50% 50%";
+    imgEl.style.transform = `scaleX(${flip})`;
+  }
+
   function jumpItem(item, wrap) {
     const range = Number.isFinite(item.jumpRange) ? item.jumpRange : 300;
     const minMove = Number.isFinite(item.jumpMinMove) ? item.jumpMinMove : 24;
@@ -86,11 +96,16 @@
       if (Math.abs(dx) >= minMove || Math.abs(dy) >= minMove) break;
     }
 
+    // NEW: mirror horizontally depending on movement direction (X axis)
+    // left = -1, right = +1
+    if (dx !== 0) item._flipX = dx < 0 ? -1 : 1;
+
     item.x = (item.x ?? 0) + dx;
     item.y = (item.y ?? 0) + dy;
 
     item._lastJumpTs = now;
     setWrapFromItem(wrap, item);
+    applyFlipFromItem(wrap, item);
   }
 
   function renderMapImages() {
@@ -99,6 +114,9 @@
     const list = Array.isArray(cfg.MAP_IMAGES) ? cfg.MAP_IMAGES : [];
     for (const item of list) {
       if (!item || !item.src) continue;
+
+      // NEW: default flip state
+      if (item._flipX !== -1 && item._flipX !== 1) item._flipX = 1;
 
       const wrap = document.createElement("div");
       wrap.className = "mapImg";
@@ -111,6 +129,10 @@
       img.loading = "lazy";
       img.decoding = "async";
       img.src = item.src;
+
+      // NEW: apply flip on first render
+      img.style.transformOrigin = "50% 50%";
+      img.style.transform = `scaleX(${item._flipX})`;
 
       wrap.appendChild(img);
       imageLayer.appendChild(wrap);
