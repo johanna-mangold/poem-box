@@ -62,9 +62,7 @@ If scrolling feels “stuck”, lift your finger and try again slightly inside o
 General notes
 -------------
 
-The map has no fixed beginning or end — explore freely.
-
-Text boxes are meant for reading, not interaction.
+The map has no fixed beginning or end - explore freely.
 
 Some elements respond only when you touch or hover directly over them.
       `.trim()
