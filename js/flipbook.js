@@ -8,9 +8,9 @@
   // ----------------------------
   // Jump settings
   // ----------------------------
-  const JUMP_RANGE = 300;
+  const JUMP_RANGE = 400;
   const JUMP_COOLDOWN_MS = 250;
-  const JUMP_MIN_MOVE = 120;
+  const JUMP_MIN_MOVE = 200;
 
   let lastJumpTs = 0;
 
