@@ -258,5 +258,5 @@
   }
   requestAnimationFrame(tick);
 
-  viewport.addEventListener("dblclick", () => goHome());
+  // viewport.addEventListener("dblclick", () => goHome());
 })();
