@@ -39,19 +39,20 @@
   });
 
   // Label
-  Object.assign(label.style, {
-    position: "absolute",
-    padding: "6px 8px",
-    borderRadius: "8px",
-    fontFamily: '"Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace',
-    fontSize: "12px",
-    lineHeight: "1.2",
-    color: "#fff",
-    background: "rgba(0,0,0,0.55)",
-    border: "1px solid rgba(255,255,255,0.18)",
-    boxShadow: "0 0 14px rgba(0,0,0,0.35)",
-    whiteSpace: "nowrap",
-    transform: "translate(12px, 12px)"
+Object.assign(label.style, {
+  position: "absolute",
+  padding: "0",
+  fontFamily: '"Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace',
+  fontSize: "12px",
+  lineHeight: "1.1",
+  color: "rgba(255,255,255,0.85)",
+  background: "transparent",
+  border: "0",
+  boxShadow: "none",
+  whiteSpace: "nowrap",
+  transform: "translate(10px, 10px)",
+  pointerEvents: "none",
+  textShadow: "0 0 6px rgba(0,0,0,0.55)" // optional, very subtle
   });
 
   overlay.appendChild(vLine);
