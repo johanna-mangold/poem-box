@@ -18,7 +18,7 @@
 
     // IMAGES
     MAP_IMAGES: [
-    { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 1220, y: 40, w: 360, rot: 0, op: 1, goto: { x: -700, y: 200, zoom: 1 }},
+    { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 1220, y: 40, w: 360, rot: 0, op: 1, goto: { x: -700, y: -900, zoom: 1 }},
       {src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png", x: -700, y: 200, w: 500, rot: 0, op:1,
   jumpOnHover: true,
   jumpRange: 300,        // optional
