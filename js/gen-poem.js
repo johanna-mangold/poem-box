@@ -14,7 +14,7 @@
   genPOI.addEventListener("touchstart",  (e)=>KMAP.stop(e), {passive:true});
   genPOI.addEventListener("touchmove",   (e)=>KMAP.stop(e), {passive:true});
 
-  const MAX_LINES = 12;
+  const MAX_LINES = 8;
   const MAX_CHARS = 1800;
 
   const TYPE_MIN_MS = 10;
