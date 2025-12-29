@@ -1,23 +1,23 @@
 (() => {
   window.KMAP = window.KMAP || {};
+  window.KMAP.config = window.KMAP.config || {};
 
-  window.KMAP.config = {
-    // CONNECTION LINES
+  Object.assign(window.KMAP.config, {
     CONNECTIONS: [
-      { id:"l1", pts: [ [4,69], [-60,69], [-60,-28], [-242,-112],[-242,-637], [-84,-637] ] },
+      { id:"l1", pts: [ [4,69], [-60,69], [-60,-28], [-242,-112], [-242,-637], [-84,-637] ] },
       { id:"l2", pts: [ [420,-30], [680,120], [1220,40] ] },
-       { id:"l3", pts: [ [250,320], [430,820] ] },
+      { id:"l3", pts: [ [250,320], [430,820] ] },
       { id:"l4", pts: [ [11,127], [11,-1171] ] }
     ],
     LINES: {
       color: "rgba(255,255,255,0.80)",
       width: 1.6,
-      dash:  [10, 10],
+      dash:  [10, 16],
       cap:   "round",
       join:  "round",
-      dashScaleWithZoom: false
+      dashScaleWithZoom: false,
+      debug: false
     },
-
     // IMAGES
     MAP_IMAGES: [
     { src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png", x: 3000, y: 1500, w: 300, rot: 0, op: 1, goto: { x: -700, y: -900, zoom: 1 }},   // red blob
