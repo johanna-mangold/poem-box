@@ -243,7 +243,7 @@
   }
 
   /* ==========================================================
-     ZINE READER (20 DOPPELSEITEN) ✅ NEW
+     ZINE READER (20 DOPPELSEITEN)
      ========================================================== */
 
   .zinePOI{
@@ -251,8 +251,8 @@
     left: -1700px;
     top:  0px;
 
-    width: 500px;      /* passt du ggf an */
-    height: 340px;     /* passt du ggf an */
+    width: 500px;
+    height: 340px;
 
     pointer-events:auto;
     user-select:none;
@@ -273,7 +273,7 @@
     display:block;
     user-select:none;
     -webkit-user-drag:none;
-    pointer-events:none; /* clicks gehen an die hit-zones */
+    pointer-events:none;
   }
 
   .zineHit{
@@ -298,7 +298,6 @@
     text-shadow: 0 0 10px rgba(0,0,0,.6);
   }
 
-  /* optional: kleines next/prev icon (sehr dezent) */
   .zineHint{
     position:absolute;
     top:50%;
@@ -313,35 +312,34 @@
   }
   .zineHint.left{ left:14px; }
   .zineHint.right{ right:14px; }
-    /* ZINE LABELS (zine / click) */
- /* label above the zine */
-.zineLabelTop{
-  position:absolute;
-  top:-28px;
-  left:0;
-  width:100%;
-  text-align:center;
 
-  font-family:"Roboto Mono", monospace;
-  font-size:12px;
-  line-height:1;
+  /* label above the zine */
+  .zineLabelTop{
+    position:absolute;
+    top:-28px;
+    left:0;
+    width:100%;
+    text-align:center;
 
-  color:#fff;
-  opacity:.6;
+    font-family:"Roboto Mono", monospace;
+    font-size:12px;
+    line-height:1;
 
-  pointer-events:none;
-  user-select:none;
-  -webkit-user-select:none;
+    color:#fff;
+    opacity:.6;
 
-  text-shadow: 0 0 8px rgba(0,0,0,.6);
-}
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
 
-.zineArrow{
-  display:inline-block;
-  margin-left:8px;
-  transform: translateY(1px);
-}
+    text-shadow: 0 0 8px rgba(0,0,0,.6);
+  }
 
+  .zineArrow{
+    display:inline-block;
+    margin-left:8px;
+    transform: translateY(1px);
+  }
 
   /* ==========================================================
      BUILD BADGE (manual build id)
@@ -472,7 +470,7 @@
     pointer-events:none;
   }
 
-  /* LINES (✅ updated: must sit above shade/grid) */
+  /* LINES */
   #linesCanvas{
     position:absolute;
     inset:0;
@@ -766,8 +764,6 @@
 <script defer src="./js/p5-game.js"></script>
 <script defer src="./js/gen-poem.js"></script>
 <script defer src="./js/coords.js"></script>
-
-<!-- ✅ FIX: path consistent with your other JS files -->
 <script defer src="./js/textBox.js"></script>
 
 <!-- ✅ config for the independent auto poem -->
@@ -793,16 +789,14 @@
       <div id="imageLayer" aria-label="images"></div>
       <div id="videoLayer" aria-label="videos"></div>
 
-      <!-- ======================================================
-           ZINE POI ✅ NEW
-           ====================================================== -->
+      <!-- ===========================
+           ZINE POI
+           =========================== -->
       <div class="zinePOI" id="zinePOI" aria-label="zine reader">
         <img id="zineImg" alt="zine spread" draggable="false" />
-       <div class="zineLabelTop">
-  click on zine
-  <span class="zineArrow">↓</span>
-</div>
-
+        <div class="zineLabelTop">
+          click on zine <span class="zineArrow">↓</span>
+        </div>
 
         <div class="zineHit left" id="zinePrev" aria-label="previous page"></div>
         <div class="zineHit right" id="zineNext" aria-label="next page"></div>
@@ -872,16 +866,12 @@ into this open womb
     <div id="grid"></div>
     <div id="shade"></div>
 
-    <!-- ✅ MOVED: canvas must be AFTER shade to be visible -->
     <canvas id="linesCanvas" aria-label="connection lines"></canvas>
   </div>
 
-  <!-- ======================================================
-       ZINE LOGIC ✅ NEW (inline)
-       ====================================================== -->
-    <!-- ======================================================
-       ZINE LOGIC ✅ (nur EINMAL!)
-       ====================================================== -->
+  <!-- ===========================
+       ZINE LOGIC (robust image loading)
+       =========================== -->
   <script>
   (() => {
     function initZine(){
@@ -892,11 +882,15 @@ into this open womb
       const next = document.getElementById("zineNext");
       const cnt  = document.getElementById("zineCounter");
 
-      // 🔁 wait until map-core created KMAP + elements exist
+      // wait until map-core created KMAP + elements exist
       if (!KMAP || !root || !img || !prev || !next || !cnt){
         requestAnimationFrame(initZine);
         return;
       }
+
+      // help iOS/Safari render reliably
+      img.loading = "eager";
+      img.decoding = "sync";
 
       const ZINE_PAGES = [
         "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png",
@@ -910,14 +904,30 @@ into this open womb
         "https://static.wixstatic.com/media/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png",
         "https://static.wixstatic.com/media/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png",
         "https://static.wixstatic.com/media/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png",
-        
+        "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png"
       ];
 
       let index = 0;
 
       function render(){
-        img.src = ZINE_PAGES[index];
+        const src = ZINE_PAGES[index];
+
+        // preload then commit to DOM img (fixes "sometimes blank on reload")
+        const pre = new Image();
+        pre.onload = () => {
+          img.src = src;
+
+          // force repaint (Safari/iOS)
+          img.style.opacity = "0.999";
+          requestAnimationFrame(() => { img.style.opacity = "1"; });
+        };
+        pre.onerror = () => {
+          console.warn("Zine image failed to load:", src);
+          // still set it, sometimes it will succeed on retry/cache
+          img.src = src;
+        };
+        pre.src = src;
+
         cnt.textContent =
           `${String(index+1).padStart(2,"0")}/${String(ZINE_PAGES.length).padStart(2,"0")}`;
       }
@@ -927,23 +937,18 @@ into this open womb
         render();
       }
 
-           // ✅ treat as POI target (so clicks on the zine don't start map drag)
+      // treat as POI target (so clicks on the zine don't start map drag)
       KMAP.registerPOIHitTest(t => t && (t === root || root.contains(t)));
 
-      // ✅ IMPORTANT:
-      // We do NOT stop pointerdown/move on the whole root,
-      // otherwise you can't drag the map while hovering the zine.
-
-      // click zones: page turn (stop propagation so it doesn't interfere)
+      // do NOT stop pointerdown/move on root → you can still drag the map while hovering
       prev.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); });
       next.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); });
 
-      // optional: touchend works nicer on iPad
       prev.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); }, {passive:false});
       next.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); }, {passive:false});
 
-      render();
-
+      // first paint (defer one frame to avoid race with layout)
+      requestAnimationFrame(render);
     }
 
     initZine();
@@ -952,9 +957,7 @@ into this open womb
 
   <script>
   (() => {
-    // 🔥 Change this when you deploy, so you can instantly verify which version loaded.
     const BUILD_ID = "001";
-
     const el = document.getElementById("buildBadge");
     if (!el) return;
 
@@ -969,4 +972,3 @@ into this open womb
   </script>
 </body>
 </html>
-
