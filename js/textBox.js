@@ -1,13 +1,12 @@
 /* =========================================================
    TEXT BOX MODULE
-   90s windows-ish · scrollable · roboto mono
+   no titlebar · neon colors via CSS · scrollable
    ========================================================= */
 
 (() => {
   const TEXT_BOXES = [
     {
       id: "text1",
-      title: "READ ME.txt",
       x: 0,
       y: 0,
       w: 420,
@@ -29,7 +28,6 @@ Text boxes
 ----------
 
 When your cursor is inside a text box, use the mouse wheel / trackpad scroll to read the text.
-
 
 Other elements
 --------------
@@ -65,20 +63,7 @@ The map has no fixed beginning or end - explore freely.
 
 You can always teleport back to the starting point by clicking on the white dot on the bottom of the screen.
       `.trim()
-    },
-
-    // weitere Boxen einfach hier ergänzen
-    /*
-    {
-      id: "text2",
-      title: "ANOTHER.txt",
-      x: -400,
-      y: 120,
-      w: 360,
-      h: 260,
-      text: `Another text box`
     }
-    */
   ];
 
   function createTextBoxes(mapEl) {
@@ -87,100 +72,60 @@ You can always teleport back to the starting point by clicking on the white dot 
     TEXT_BOXES.forEach(cfg => {
       if (!cfg) return;
 
+      // avoid duplicates
+      if (cfg.id && document.getElementById(cfg.id)) return;
+
       const box = document.createElement("div");
       box.className = "map-textbox";
-      box.id = cfg.id || "";
+      if (cfg.id) box.id = cfg.id;
 
       box.style.left = (cfg.x ?? 0) + "px";
       box.style.top  = (cfg.y ?? 0) + "px";
       box.style.width  = (cfg.w ?? 360) + "px";
       box.style.height = (cfg.h ?? 240) + "px";
 
-      // --- Titlebar
-      const title = document.createElement("div");
-      title.className = "map-textbox-title";
-
-      const ttlLeft = document.createElement("div");
-      ttlLeft.className = "ttl";
-
-      const ttlText = document.createElement("div");
-      ttlText.className = "ttlText";
-      ttlText.textContent = cfg.title || cfg.id || "TEXTBOX";
-
-      ttlLeft.appendChild(ttlText);
-
-      const btns = document.createElement("div");
-      btns.className = "map-textbox-btns";
-
-      const closeBtn = document.createElement("button");
-      closeBtn.type = "button";
-      closeBtn.className = "map-textbox-btn";
-      closeBtn.setAttribute("aria-label", "close");
-      closeBtn.textContent = "×";
-
-      btns.appendChild(closeBtn);
-
-      title.appendChild(ttlLeft);
-      title.appendChild(btns);
-
-      // --- Body
-      const body = document.createElement("div");
-      body.className = "map-textbox-body";
-
       const inner = document.createElement("div");
       inner.className = "map-textbox-inner";
       inner.textContent = cfg.text || "";
 
-      body.appendChild(inner);
+      box.appendChild(inner);
+      mapEl.appendChild(box);
 
-      // decorative grip
-      const grip = document.createElement("div");
-      grip.className = "map-textbox-grip";
+      // =========================
+      // Interaction fixes
+      // =========================
 
-      box.appendChild(title);
-      box.appendChild(body);
-      box.appendChild(grip);
-
-      // --- Interaction: keep scrolling inside, don't let map swallow the scroll
-      // pointerdown: stop so map doesn't start dragging when user tries to select/scroll inside the box
-      box.addEventListener("pointerdown", (e) => {
-        e.stopPropagation();
-      }, { passive: true });
-
-      // wheel: allow scroll in box, prevent the wheel from panning/zooming map
+      // ✅ Let scroll work: stop wheel BEFORE it reaches #viewport (which preventDefault's it)
       inner.addEventListener("wheel", (e) => {
         e.stopPropagation();
+        // don't preventDefault -> keep native scrolling
+      }, { capture: true, passive: true });
+
+      // ✅ Touch scroll inside box shouldn't start map drag
+      // We stop propagation only for touch pointers.
+      inner.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "touch") e.stopPropagation();
       }, { passive: true });
 
-      // Close button
-      closeBtn.addEventListener("pointerdown", (e) => {
-        e.stopPropagation();
+      // Optional: if you want mouse selection inside box without dragging map when grabbing text:
+      inner.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse") e.stopPropagation();
       }, { passive: true });
-
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        box.remove();
-      });
-
-      mapEl.appendChild(box);
     });
   }
 
-  // Auto-init: attach to KMAP world when available
+  // Auto-init
   function init() {
     const world = window.KMAP?.world || document.getElementById("world");
     if (!world) return;
     createTextBoxes(world);
   }
 
-  // defer scripts run after parse; map-core is also defer and loaded earlier,
-  // but we keep a fallback just in case.
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
     init();
   }
 
-  // (optional) expose for debugging/manual calls
   window.createTextBoxes = createTextBoxes;
 })();
