@@ -1,26 +1,6 @@
 // lines.js
 (() => {
   // =========================
-  // EDIT HERE
-  // =========================
-  const CONNECTIONS = [
-   { id:"l1", pts: [ [-80,-40], [-242,-125], [-242,-642], [-76,-642] ] },
-    { id:"l2", pts: [ [500,200], [500,870] ] },
-    { id:"l3", pts: [ [390,-180], [390,-600], [1820,-600] ] },
-  ];
-
-  const LINES = {
-    color: "rgba(28,1,224,1)",
-
-    width: 2.2,
-    dash:  [8, 16],
-    cap:   "round",
-    join:  "round",
-    dashScaleWithZoom: false,
-    debug: false
-  };
-
-  // =========================
   // DOM
   // =========================
   const viewport = document.getElementById("viewport");
@@ -33,7 +13,7 @@
     viewport.appendChild(canvas);
   }
 
-  // ✅ wichtig: Canvas ganz oben (über shade) – safe, auch wenn HTML Reihenfolge anders ist
+  // canvas immer ganz oben im viewport lassen
   viewport.appendChild(canvas);
 
   Object.assign(canvas.style, {
@@ -48,15 +28,35 @@
   const ctx = canvas.getContext("2d", { alpha: true });
 
   // =========================
-  // STATE: wir merken uns den letzten Transform
+  // DEFAULTS (fallback wenn config fehlt)
   // =========================
-  let TR = { x: 0, y: 0 };
+  const DEFAULT_CONNECTIONS = [];
+  const DEFAULT_LINES = {
+    color: "rgba(255,255,255,0.45)",
+    width: 1.6,
+    dash: [10, 16],
+    cap: "round",
+    join: "round",
+    dashScaleWithZoom: false,
+    debug: false
+  };
 
-  // World->Screen mit aktuellem Transform
- function worldToScreen(wx, wy){
-  return { x: wx + TR.x, y: wy + TR.y };
-}
+  // =========================
+  // STATE
+  // =========================
+  let TR = { x: 0, y: 0, scale: 1 };
 
+  // world->screen using current camera transform
+  function worldToScreen(wx, wy){
+    return { x: wx + (TR.x || 0), y: wy + (TR.y || 0) };
+  }
+
+  function getConfig(){
+    const cfg = window.KMAP?.config || {};
+    const connections = Array.isArray(cfg.CONNECTIONS) ? cfg.CONNECTIONS : DEFAULT_CONNECTIONS;
+    const style = (cfg.LINES && typeof cfg.LINES === "object") ? cfg.LINES : DEFAULT_LINES;
+    return { connections, style };
+  }
 
   // =========================
   // RESIZE
@@ -76,11 +76,6 @@
     draw();
   }
 
-  resize();
-  setTimeout(resize, 50);
-  setTimeout(resize, 250);
-  setTimeout(resize, 900);
-
   if ("ResizeObserver" in window) new ResizeObserver(resize).observe(viewport);
   window.addEventListener("resize", resize, { passive: true });
   if (window.visualViewport) window.visualViewport.addEventListener("resize", resize, { passive: true });
@@ -94,34 +89,42 @@
     const h = Math.max(1, r.height);
     ctx.clearRect(0, 0, w, h);
 
-    if (LINES.debug){
-      ctx.fillStyle = "rgba(255,0,0,0.35)";
-      ctx.fillRect(10,10,220,46);
+    const { connections, style } = getConfig();
+
+    // debug overlay
+    if (style.debug){
+      ctx.fillStyle = "rgba(255,0,0,0.25)";
+      ctx.fillRect(10,10,320,62);
       ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.font = "12px Roboto Mono, monospace";
-      ctx.fillText(`TR x:${TR.x.toFixed(0)} y:${TR.y.toFixed(0)}`, 18, 38);
+      ctx.fillText(`TR x:${(TR.x||0).toFixed(0)} y:${(TR.y||0).toFixed(0)} scale:${(TR.scale||1).toFixed(2)}`, 18, 34);
+      ctx.fillText(`connections: ${connections.length}`, 18, 54);
     }
 
-    ctx.strokeStyle = LINES.color;
-    ctx.lineWidth   = LINES.width;
-    ctx.lineCap     = LINES.cap;
-    ctx.lineJoin    = LINES.join;
+    ctx.strokeStyle = style.color || DEFAULT_LINES.color;
+    ctx.lineWidth   = style.width ?? DEFAULT_LINES.width;
+    ctx.lineCap     = style.cap   || DEFAULT_LINES.cap;
+    ctx.lineJoin    = style.join  || DEFAULT_LINES.join;
 
     const scale = TR.scale ?? 1;
-    const dash = LINES.dashScaleWithZoom ? LINES.dash.map(v => v * scale) : LINES.dash;
+    const dashArr = Array.isArray(style.dash) ? style.dash : DEFAULT_LINES.dash;
+    const dash = style.dashScaleWithZoom ? dashArr.map(v => v * scale) : dashArr;
     ctx.setLineDash(dash);
 
-    for (const c of CONNECTIONS){
+    for (const c of connections){
       if (!c?.pts || c.pts.length < 2) continue;
 
       ctx.beginPath();
+
       const p0 = worldToScreen(c.pts[0][0], c.pts[0][1]);
       ctx.moveTo(p0.x, p0.y);
 
-      for (let i=1; i<c.pts.length; i++){
+      // ✅ Knicke: alle Punkte per lineTo
+      for (let i = 1; i < c.pts.length; i++){
         const p = worldToScreen(c.pts[i][0], c.pts[i][1]);
         ctx.lineTo(p.x, p.y);
       }
+
       ctx.stroke();
     }
 
@@ -129,36 +132,40 @@
   }
 
   // =========================
-  // HOOK INTO KMAP (THIS is the important part)
+  // HOOK INTO KMAP
   // =========================
   function hook(){
     const KMAP = window.KMAP;
     if (!KMAP || typeof KMAP.onApply !== "function") return false;
 
-    // ✅ initial transform übernehmen, falls schon vorhanden
-    if (KMAP.transform) TR = { x: KMAP.transform.x, y: KMAP.transform.y };
+    // initial
+    if (KMAP.transform) TR = { ...TR, ...KMAP.transform };
 
-
-    // ✅ bei JEDEM applyTransform: Transform updaten + redraw
     KMAP.onApply((t) => {
-  if (t && isFinite(t.x) && isFinite(t.y)) TR = { x: t.x, y: t.y };
-  draw();
-});
+      if (t && isFinite(t.x) && isFinite(t.y)){
+        TR = { ...TR, ...t };
+      }
+      draw();
+    });
 
-
-    // einmal sofort zeichnen
     draw();
     return true;
   }
 
+  // load order fallback
   if (!hook()){
-    // load-order fallback
     const t0 = performance.now();
     const timer = setInterval(() => {
       if (hook() || (performance.now() - t0) > 5000) clearInterval(timer);
     }, 50);
   }
 
-  // Optional: manuelles redraw
+  // first resize + redraw
+  resize();
+  setTimeout(resize, 50);
+  setTimeout(resize, 250);
+  setTimeout(resize, 900);
+
+  // manual redraw (useful after editing config live)
   window.redrawConnectionLines = draw;
 })();
