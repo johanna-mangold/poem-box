@@ -316,13 +316,13 @@
     /* ZINE LABELS (zine / click) */
   .zineLabel{
     position:absolute;
-    top:-8px;
+    top:-18px;
 
     font-family:"Roboto Mono", monospace;
     font-size:12px;
     line-height:1;
 
-    color:#000000;
+    color:#fff;
     opacity:1;
 
     pointer-events:none; /* stört Klicks nicht */
@@ -796,8 +796,11 @@
            ====================================================== -->
       <div class="zinePOI" id="zinePOI" aria-label="zine reader">
         <img id="zineImg" alt="zine spread" draggable="false" />
-        <div class="zineLabel left">zine</div>
-<div class="zineLabel right">click</div>
+       <div class="zineLabelTop">
+  click on zine
+  <span class="zineArrow">↓</span>
+</div>
+
 
         <div class="zineHit left" id="zinePrev" aria-label="previous page"></div>
         <div class="zineHit right" id="zineNext" aria-label="next page"></div>
