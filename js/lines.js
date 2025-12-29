@@ -50,13 +50,13 @@
   // =========================
   // STATE: wir merken uns den letzten Transform
   // =========================
-  let TR = { x: 0, y: 0, scale: 1 };
+  let TR = { x: 0, y: 0 };
 
   // World->Screen mit aktuellem Transform
-  function worldToScreen(wx, wy){
-    const s = TR.scale ?? 1;
-    return { x: wx * s + TR.x, y: wy * s + TR.y };
-  }
+ function worldToScreen(wx, wy){
+  return { x: wx + TR.x, y: wy + TR.y };
+}
+
 
   // =========================
   // RESIZE
@@ -136,13 +136,15 @@
     if (!KMAP || typeof KMAP.onApply !== "function") return false;
 
     // ✅ initial transform übernehmen, falls schon vorhanden
-    if (KMAP.transform) TR = { ...TR, ...KMAP.transform };
+    if (KMAP.transform) TR = { x: KMAP.transform.x, y: KMAP.transform.y };
+
 
     // ✅ bei JEDEM applyTransform: Transform updaten + redraw
     KMAP.onApply((t) => {
-      if (t && isFinite(t.x) && isFinite(t.y)) TR = { ...TR, ...t };
-      draw();
-    });
+  if (t && isFinite(t.x) && isFinite(t.y)) TR = { x: t.x, y: t.y };
+  draw();
+});
+
 
     // einmal sofort zeichnen
     draw();
