@@ -33,7 +33,7 @@
 
       {
         src:"https://static.wixstatic.com/media/0f3578_14420ea68f1e4ddfa3e1cf12329f3a39~mv2.gif",
-        x: -700, y: 200, w: 300, rot: 0, op: 1
+        x: -700, y: 200, w: 200, rot: 0, op: 1
       }, // wyrd gif1
 
       {
