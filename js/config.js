@@ -32,9 +32,9 @@
       }, // red blob
 
       {
-        src:"https://static.wixstatic.com/media/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png/v1/fill/w_1170,h_1139,al_c,q_90,enc_avif,quality_auto/0f3578_7a3ae281337d4c67a815489f098214a0~mv2.png",
-        x: -700, y: 200, w: 200, rot: 0, op: 1
-      }, // wandobjekt homeflesh
+        src:"https://static.wixstatic.com/media/0f3578_14420ea68f1e4ddfa3e1cf12329f3a39~mv2.gif",
+        x: -700, y: 200, w: 300, rot: 0, op: 1
+      }, // wyrd gif1
 
       {
         src:"https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png",
