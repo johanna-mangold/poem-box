@@ -915,19 +915,23 @@ into this open womb
         render();
       }
 
-      // ✅ treat as POI target (stop map dragging)
+           // ✅ treat as POI target (so clicks on the zine don't start map drag)
       KMAP.registerPOIHitTest(t => t && (t === root || root.contains(t)));
 
-      // stop map interactions while inside the reader
-      ["pointerdown","pointermove","touchstart","touchmove","wheel"].forEach(ev=>{
-        root.addEventListener(ev, (e)=>KMAP.stop(e), {passive:true});
-      });
+      // ✅ IMPORTANT:
+      // We do NOT stop pointerdown/move on the whole root,
+      // otherwise you can't drag the map while hovering the zine.
 
-      // click zones
-      prev.addEventListener("click", (e)=>{ e.preventDefault(); go(-1); });
-      next.addEventListener("click", (e)=>{ e.preventDefault(); go(+1); });
+      // click zones: page turn (stop propagation so it doesn't interfere)
+      prev.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); });
+      next.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); });
+
+      // optional: touchend works nicer on iPad
+      prev.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); }, {passive:false});
+      next.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); }, {passive:false});
 
       render();
+
     }
 
     initZine();
