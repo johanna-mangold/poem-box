@@ -26,8 +26,8 @@
      TEXTBOX (90s WINDOWS STYLE)
      ========================================================== */
 
- /* =========================================================
-   TEXTBOX – light, neutral, non-bulky
+/* =========================================================
+   TEXTBOX – minimal, integrated, no window metaphor
    ========================================================= */
 
 .map-textbox{
@@ -36,15 +36,15 @@
   box-sizing:border-box;
   z-index: 6;
 
-  /* kein Rahmen, keine Rundung */
+  /* kein Rahmen, kein Header, kein Schatten */
   border: none;
 }
 
-/* scroll area */
+/* Text + Scroll */
 .map-textbox-inner{
   height:100%;
-  overflow-y: scroll;        /* immer sichtbar */
-  padding:16px 18px 16px 18px;
+  overflow-y: scroll;      /* Scrollbar immer sichtbar */
+  padding:18px 20px;
 
   font-family:"Roboto Mono", monospace;
   font-size:13px;
@@ -57,8 +57,26 @@
 
   /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,.35) rgba(0,0,0,.06);
+  scrollbar-color: rgba(0,0,0,.35) rgba(0,0,0,.05);
 }
+
+/* WebKit scrollbar – ruhig & schmal */
+.map-textbox-inner::-webkit-scrollbar{
+  width: 8px;
+}
+
+.map-textbox-inner::-webkit-scrollbar-track{
+  background: rgba(0,0,0,.05);
+}
+
+.map-textbox-inner::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.35);
+}
+
+.map-textbox-inner::-webkit-scrollbar-thumb:hover{
+  background: rgba(0,0,0,.5);
+}
+
 
 /* =========================
    WebKit scrollbar – slim
