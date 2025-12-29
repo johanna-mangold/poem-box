@@ -37,19 +37,24 @@
       }, // wyrd gif1
 
       {
+        src:"https://static.wixstatic.com/media/0f3578_2822fdaf4da941cdabb84d24d0e44848~mv2.gif",
+        x: -1000, y: -1400, w: 200, rot: 0, op: 1
+      }, // wyrd gif2
+      
+      {
         src:"https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png",
         x: -870, y: -670, w: 300, rot: 0, op: 1,
         jumpOnHover: true,
         jumpRange: 300,
         jumpCooldownMs: 250,
         jumpMinMove: 200
-      }, // optional biiird
+      }, // blubiiird
 
       {
         src:"https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png",
-        x: -800, y: 700, w: 300, rot: 0, op: 1,
+        x: -900, y: 1700, w: 300, rot: 0, op: 1,
         href: "https://mothermountain.bandcamp.com/album/mother-mountain"
-      }
+      } // mother mountain cover
     ],
 
     // YOUTUBE
