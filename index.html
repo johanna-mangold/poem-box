@@ -23,56 +23,52 @@
   }
 
   /* =========================================================
-     TEXTBOX – minimal, integrated, no window metaphor
-     (UPDATED: removed titlebar / buttons / win95 block)
+     TEXTBOX – no titlebar, no frame, KEEP neon colors
      ========================================================= */
- /* =========================================================
-   TEXTBOX – no titlebar, no frame, KEEP neon colors
-   ========================================================= */
-.map-textbox{
-  position:absolute;
-  box-sizing:border-box;
-  z-index: 6;
-  border: none;
-  background: transparent; /* wrapper unsichtbar */
-}
+  .map-textbox{
+    position:absolute;
+    box-sizing:border-box;
+    z-index: 6;
+    border: none;
+    background: transparent; /* wrapper unsichtbar */
+  }
 
-.map-textbox-inner{
-  height:100%;
-  overflow-y: scroll;
-  padding: 14px 14px;
-  box-sizing:border-box;
+  .map-textbox-inner{
+    height:100%;
+    overflow-y: scroll;
+    padding: 14px 14px;
+    box-sizing:border-box;
 
-  font-family:"Roboto Mono", monospace;
-  font-size:13px;
-  line-height:1.55;
-  white-space:pre-wrap;
+    font-family:"Roboto Mono", monospace;
+    font-size:13px;
+    line-height:1.55;
+    white-space:pre-wrap;
 
-  background:#0000ff; /* blau */
-  color:#ff00ff;      /* pink */
-  text-shadow: 0 0 6px rgba(255,0,255,.35);
+    background:#0000ff; /* blau */
+    color:#ff00ff;      /* pink */
+    text-shadow: 0 0 6px rgba(255,0,255,.35);
 
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 
-  scrollbar-width: auto;
-  scrollbar-color: #c0c0c0 #c0c0c0;
-}
+    scrollbar-width: auto;
+    scrollbar-color: #c0c0c0 #c0c0c0;
+  }
 
-.map-textbox-inner::-webkit-scrollbar{ width: 16px; }
-.map-textbox-inner::-webkit-scrollbar-track{
-  background:#c0c0c0;
-  border-left: 1px solid #000;
-}
-.map-textbox-inner::-webkit-scrollbar-thumb{
-  background:#c0c0c0;
-  border:2px solid #c0c0c0;
-  border-top-color:#ffffff;
-  border-left-color:#ffffff;
-  border-right-color:#404040;
-  border-bottom-color:#404040;
-  box-shadow: inset 0 0 0 1px #000;
-}
+  .map-textbox-inner::-webkit-scrollbar{ width: 16px; }
+  .map-textbox-inner::-webkit-scrollbar-track{
+    background:#c0c0c0;
+    border-left: 1px solid #000;
+  }
+  .map-textbox-inner::-webkit-scrollbar-thumb{
+    background:#c0c0c0;
+    border:2px solid #c0c0c0;
+    border-top-color:#ffffff;
+    border-left-color:#ffffff;
+    border-right-color:#404040;
+    border-bottom-color:#404040;
+    box-shadow: inset 0 0 0 1px #000;
+  }
 
   /* ==========================================================
      ZINE READER (20 DOPPELSEITEN)
@@ -96,7 +92,14 @@
     z-index: 5;
   }
 
-  #zineImg{
+  /* Position vom zweiten Zine */
+  .zinePOI.z2{
+    left: 0px;
+    top:  0px;
+  }
+
+  /* statt #zineImg (damit auch zineImg_2 klappt) */
+  .zinePOI img{
     position:absolute;
     inset:0;
     width:100%;
@@ -637,6 +640,19 @@
         <div class="zineCounter" id="zineCounter">01/20</div>
       </div>
 
+      <!-- ZINE 2 (NEU) -->
+      <div class="zinePOI z2" id="zinePOI_2" aria-label="zine 2">
+        <img id="zineImg_2" alt="zine 2" draggable="false" />
+        <div class="zineLabelTop">click on zine <span class="zineArrow">↓</span></div>
+
+        <div class="zineHit left"  id="zinePrev_2" aria-label="previous page zine 2"></div>
+        <div class="zineHit right" id="zineNext_2" aria-label="next page zine 2"></div>
+
+        <div class="zineHint left">←</div>
+        <div class="zineHint right">→</div>
+        <div class="zineCounter" id="zineCounter_2">01/01</div>
+      </div>
+
       <div class="flipPOI" id="flipPOI" aria-label="animation">
         <img class="a" alt=""
           src="https://static.wixstatic.com/media/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png/v1/fill/w_600,h_848,al_c,lg_1,q_90,enc_avif,quality_auto/0f3578_78e897a445d5429bacac46baf65dbbdd~mv2.png">
@@ -704,17 +720,16 @@ into this open womb
        =========================== -->
   <script>
   (() => {
-    function initZine(){
+    function initOneZine(opts){
       const KMAP = window.KMAP;
-      const root = document.getElementById("zinePOI");
-      const img  = document.getElementById("zineImg");
-      const prev = document.getElementById("zinePrev");
-      const next = document.getElementById("zineNext");
-      const cnt  = document.getElementById("zineCounter");
+      const root = document.getElementById(opts.rootId);
+      const img  = document.getElementById(opts.imgId);
+      const prev = document.getElementById(opts.prevId);
+      const next = document.getElementById(opts.nextId);
+      const cnt  = document.getElementById(opts.counterId);
 
-      // wait until map-core created KMAP + elements exist
       if (!KMAP || !root || !img || !prev || !next || !cnt){
-        requestAnimationFrame(initZine);
+        requestAnimationFrame(() => initOneZine(opts));
         return;
       }
 
@@ -722,32 +737,11 @@ into this open womb
       img.loading = "eager";
       img.decoding = "sync";
 
-      const ZINE_PAGES = [
-        "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_9c27916905c849ae864725138867bf35~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_9c27916905c849ae864725138867bf35~mv2.png",
-        "https://static.wixstatic.com/media/0f3578_777354008ad942c090462e0c848e74db~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_777354008ad942c090462e0c848e74db~mv2.png"
-      ];
-
+      const PAGES = opts.pages;
       let index = 0;
 
       function render(){
-        const src = ZINE_PAGES[index];
+        const src = PAGES[index];
 
         const pre = new Image();
         pre.onload = () => {
@@ -762,11 +756,11 @@ into this open womb
         pre.src = src;
 
         cnt.textContent =
-          `${String(index+1).padStart(2,"0")}/${String(ZINE_PAGES.length).padStart(2,"0")}`;
+          `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
       }
 
       function go(delta){
-        index = (index + delta + ZINE_PAGES.length) % ZINE_PAGES.length;
+        index = (index + delta + PAGES.length) % PAGES.length;
         render();
       }
 
@@ -781,7 +775,48 @@ into this open womb
       requestAnimationFrame(render);
     }
 
-    initZine();
+    const ZINE_PAGES_1 = [
+      "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_9c27916905c849ae864725138867bf35~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_9c27916905c849ae864725138867bf35~mv2.png",
+      "https://static.wixstatic.com/media/0f3578_777354008ad942c090462e0c848e74db~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_777354008ad942c090462e0c848e74db~mv2.png"
+    ];
+
+    /* ZINE 2: trage hier deine eigenen URLs ein.
+       Ich lasse es absichtlich erst mal mit 1 Seite laufen,
+       damit es sicher lädt und du nur die Links austauschst. */
+    const ZINE_PAGES_2 = [
+      "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png"
+    ];
+
+    initOneZine({
+      rootId:"zinePOI", imgId:"zineImg",
+      prevId:"zinePrev", nextId:"zineNext",
+      counterId:"zineCounter",
+      pages: ZINE_PAGES_1
+    });
+
+    initOneZine({
+      rootId:"zinePOI_2", imgId:"zineImg_2",
+      prevId:"zinePrev_2", nextId:"zineNext_2",
+      counterId:"zineCounter_2",
+      pages: ZINE_PAGES_2
+    });
   })();
   </script>
 
