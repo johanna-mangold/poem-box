@@ -30,7 +30,7 @@
     box-sizing:border-box;
     z-index: 6;
     border: none;
-    background: transparent; /* wrapper unsichtbar */
+    background: transparent;
   }
 
   .map-textbox-inner{
@@ -70,7 +70,6 @@
     box-shadow: inset 0 0 0 1px #000;
   }
 
-  /* small label above textbox */
   .map-textbox-label{
     position:absolute;
     right: 0;
@@ -110,19 +109,16 @@
     z-index: 5;
   }
 
-  /* Position vom zweiten Zine */
   .zinePOI.z2{
     left: 1000px;
     top:  -1680px;
   }
 
-  /* Position vom dritten Zine */
   .zinePOI.z3{
     left: -1000px;
     top:  1600px;
   }
 
-  /* statt #zineImg (damit auch zineImg_2 / _3 klappt) */
   .zinePOI img{
     position:absolute;
     inset:0;
@@ -172,7 +168,6 @@
   .zineHint.left{ left:14px; }
   .zineHint.right{ right:14px; }
 
-  /* label above the zine */
   .zineLabelTop{
     position:absolute;
     top:-28px;
@@ -201,7 +196,7 @@
   }
 
   /* ==========================================================
-     BUILD BADGE (manual build id)
+     BUILD BADGE
      ========================================================== */
   #buildBadge{
     position: fixed;
@@ -251,7 +246,6 @@
     min-height: 100dvh;
   }
 
-  /* MAP */
   #viewport{
     position:absolute;
     left:0; top:0;
@@ -329,7 +323,6 @@
     pointer-events:none;
   }
 
-  /* LINES */
   #linesCanvas{
     position:absolute;
     inset:0;
@@ -337,7 +330,6 @@
     pointer-events:none;
   }
 
-  /* IMAGES */
   #imageLayer{
     position:absolute;
     left:0; top:0;
@@ -362,7 +354,6 @@
     -webkit-user-drag:none;
   }
 
-  /* YOUTUBE */
   #videoLayer{
     position:absolute;
     left:0; top:0;
@@ -391,11 +382,10 @@
     pointer-events:auto;
   }
 
-  /* FLIPBOOK */
   .flipPOI{
     position:absolute;
-    left: 400px;
-    top:  -1600px;
+    left: 440px;
+    top:  -900px;
 
     width: 160px;
     aspect-ratio: 848 / 1200;
@@ -438,7 +428,6 @@
   .flipPOI.isAnimating img.b{ animation: flipB 520ms steps(1,end) infinite; }
   .flipPOI:not(:hover):not(.isAnimating) img{ animation: none !important; }
 
-  /* POEM DISTORT */
   .poemPOI{
     position:absolute;
     left: 470px;
@@ -482,7 +471,6 @@
     .w{ filter:none !important; }
   }
 
-  /* P5 GAME */
   .p5POI{
     position:absolute;
     left: 2000px;
@@ -522,31 +510,28 @@
   }
   .p5Reset:active{ transform: translateX(-50%) scale(0.96); }
 
-  /* P5 STICKFIGURES (new) */
-.p5StickPOI{
-  position:absolute;
-  left: -3000px;     /* <- HIER X auf der Map */
-  top:  1000px;    /* <- HIER Y auf der Map */
-  width: 620px;     /* <- HIER Breite */
-  height: 420px;    /* <- HIER Höhe */
+  .p5StickPOI{
+    position:absolute;
+    left: -3000px;
+    top:  1000px;
+    width: 620px;
+    height: 420px;
 
-  pointer-events:auto;
-  touch-action:none;
-  user-select:none;
-  -webkit-user-select:none;
-  overflow: hidden;
+    pointer-events:auto;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+    overflow: hidden;
 
-  z-index: 5;
-}
-.p5StickPOI canvas{
-  display:block;
-  width:100% !important;
-  height:100% !important;
-  touch-action:none;
-}
+    z-index: 5;
+  }
+  .p5StickPOI canvas{
+    display:block;
+    width:100% !important;
+    height:100% !important;
+    touch-action:none;
+  }
 
-
-  /* GENERATOR (typewriter) */
   .genPOI{
     position:absolute;
     left: -34px;
@@ -588,7 +573,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* AUTO POEM (mutating/freeze system) */
   .autoPOI{
     position:absolute;
     left: 2400px;
@@ -652,8 +636,6 @@
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
 <script defer src="./js/sketch.js"></script>
 
-  
-
 <!-- ✅ config for the independent auto poem -->
 <script>
   window.POEM_SYS_CONFIG = {
@@ -670,11 +652,6 @@
 
   <div id="viewport">
     <div id="world">
-      <!--
-      <div class="node" style="left:0px; top:0px;">start (0,0)</div>
-      <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
-      <div class="node" style="left:-720px; top:520px;">node links/unten</div>
-      -->
 
       <div id="imageLayer" aria-label="images"></div>
       <div id="videoLayer" aria-label="videos"></div>
@@ -771,12 +748,10 @@ into this open womb
 
       <div class="p5StickPOI" id="p5StickPOI" aria-label="stick figures physics"></div>
 
-
       <div class="genPOI" id="genPOI" aria-label="poem generator">
         <pre id="genPoemBox" class="genBox" aria-label="Tap / click to generate poem">click</pre>
       </div>
 
-      <!-- ✅ independent auto poem -->
       <div class="autoPOI" id="autoPOI" aria-label="auto poem">
         <pre id="autoPoem" class="autoBox" aria-label="auto poem"></pre>
         <div id="autoStatus" class="autoStatus"></div>
@@ -789,7 +764,7 @@ into this open womb
   </div>
 
   <!-- ===========================
-       ZINE LOGIC (robust image loading)
+       ZINE LOGIC (retries + neighbor preload for ALL zines)
        =========================== -->
   <script>
   (() => {
@@ -806,30 +781,78 @@ into this open womb
         return;
       }
 
-      // help iOS/Safari render reliably
+      // iOS/Safari: hilft manchmal beim ersten Render
       img.loading = "eager";
       img.decoding = "sync";
 
-      const PAGES = opts.pages;
+      const PAGES = opts.pages || [];
+      if (!PAGES.length){
+        console.warn("Zine has no pages:", opts.rootId);
+        return;
+      }
+
       let index = 0;
 
-      function render(){
-        const src = PAGES[index];
+      // keep refs so we can avoid reloading same neighbor repeatedly
+      const preCache = new Map(); // src -> Image()
 
-        const pre = new Image();
-        pre.onload = () => {
-          img.src = src;
-          img.style.opacity = "0.999";
-          requestAnimationFrame(() => { img.style.opacity = "1"; });
-        };
-        pre.onerror = () => {
-          console.warn("Zine image failed to load:", src);
-          img.src = src;
-        };
-        pre.src = src;
+      function preload(src){
+        if (!src || preCache.has(src)) return;
+        const i = new Image();
+        // wichtig: KEIN cache-busting beim preload, sonst killt man caching
+        i.src = src;
+        preCache.set(src, i);
 
+        // klein halten, nicht unendlich wachsen
+        if (preCache.size > 24){
+          const firstKey = preCache.keys().next().value;
+          preCache.delete(firstKey);
+        }
+      }
+
+      function setCounter(){
         cnt.textContent =
           `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
+      }
+
+      function render(){
+        const baseSrc = PAGES[index];
+        let attempt = 0;
+
+        setCounter();
+
+        // preload neighbors (macht blättern wieder schnell)
+        preload(PAGES[(index + 1) % PAGES.length]);
+        preload(PAGES[(index - 1 + PAGES.length) % PAGES.length]);
+
+        const tryLoad = () => {
+          const src =
+            attempt === 0
+              ? baseSrc
+              : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
+
+          img.onload = () => {
+            img.style.opacity = "0.999";
+            requestAnimationFrame(() => { img.style.opacity = "1"; });
+            img.onload = null;
+            img.onerror = null;
+          };
+
+          img.onerror = () => {
+            attempt++;
+            if (attempt <= 3){
+              setTimeout(tryLoad, 250 + attempt * 250);
+            } else {
+              console.warn("Zine image failed after retries:", baseSrc);
+              img.onload = null;
+              img.onerror = null;
+            }
+          };
+
+          img.src = src;
+        };
+
+        tryLoad();
       }
 
       function go(delta){
@@ -837,6 +860,7 @@ into this open womb
         render();
       }
 
+      // clicks on zine shouldn’t start map drag
       KMAP.registerPOIHitTest(t => t && (t === root || root.contains(t)));
 
       prev.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); });
@@ -893,7 +917,6 @@ into this open womb
       "https://static.wixstatic.com/media/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png"
     ];
 
-    /* ZINE 3: aktuell 1 Seite – tausche/ergänze deine URLs */
     const ZINE_PAGES_3 = [
       "https://static.wixstatic.com/media/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png",
       "https://static.wixstatic.com/media/0f3578_b582a486313e4738a3964f92e894864c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b582a486313e4738a3964f92e894864c~mv2.png",
