@@ -133,6 +133,11 @@ class Ball {
 
 function setup() {
   if (__didInit) return;
+  pixelDensity(1);
+  frameRate(24);
+
+  const parent = document.querySelector(PARENT_SELECTOR);
+
 
   const parent = document.querySelector(PARENT_SELECTOR);
   if (!parent) {
