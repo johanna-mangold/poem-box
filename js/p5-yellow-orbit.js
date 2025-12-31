@@ -158,7 +158,7 @@
 
       draw() {
         p.noStroke();
-        p.fill(0);
+        p.fill(#F031CF);
         p.rect(this.pos.x - DOT_SIZE / 2, this.pos.y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
       }
     }
