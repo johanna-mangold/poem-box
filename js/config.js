@@ -67,7 +67,7 @@
 
     // YOUTUBE
     MAP_YOUTUBE: [
-      { url:"https://youtu.be/9uCARmlj-KY", x: 400, y: 2000, w: 480, h: 270, rot: 0, op: 1, mute: 1, controls: 1 }
+      { url:"https://youtu.be/9gh8qjxcoOA", x: 400, y: 2000, w: 480, h: 270, rot: 0, op: 1, mute: 1, controls: 1 }
     ]
   });
 })();
