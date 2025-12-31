@@ -59,7 +59,7 @@
 
       {
         src:"https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png",
-        x: -900, y: 1700, w: 300, rot: 0, op: 1,
+        x: -1200, y: 3000, w: 300, rot: 0, op: 1,
         href: "https://mothermountain.bandcamp.com/album/mother-mountain"
       } // mother mountain cover
     ],
