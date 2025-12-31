@@ -21,7 +21,7 @@ Click and drag anywhere to move through the map.
 
 You can also use two-finger scrolling on a trackpad.
 
-Some elements react to hover or clicks.
+Many elements react to hover or clicks.
 
 If something doesn’t move, try dragging slightly outside of it.
 
