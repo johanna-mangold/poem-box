@@ -48,7 +48,7 @@ Or you can follow the white-dotted-lines, Dorothy.
 
 You can always teleport back to the starting point by clicking on the white dot on the bottom of the screen.
       `.trim()
-    }
+    },
 
      {
       id: "text2",
@@ -76,7 +76,7 @@ You can always teleport back to the starting point by clicking on the white dot 
 - [[david pablo - joanna yulia kluge]] **
 - [[für den rest des lebens - zeruya shalev]]
 - [[the dream hotel - laila lalami]] **
-     
+     `.trim()
       }
   ];
 
