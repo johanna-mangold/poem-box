@@ -7,8 +7,8 @@
     id: "p5YellowOrbit",
     x: -1954,
     y: 1300,
-    w: 460,
-    h: 460,
+    w: 660,
+    h: 660,
     z: 999,
     pointerEvents: "auto"
   };
@@ -61,7 +61,7 @@
   new p5((p) => {
     // ===== CONFIG =====
     const NUM = 90;
-    const Y_BASE_DIAM = 430;
+    const Y_BASE_DIAM = 280;
 
     const ATTRACT_STRENGTH = 0.55;
     const ATTRACT_MAX = 10.0;
