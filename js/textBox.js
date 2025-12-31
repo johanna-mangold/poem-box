@@ -12,9 +12,8 @@
       w: 420,
       h: 120,
       text: `
-How to navigate this map
--------------------------
----------      ----------
+*How to navigate this map*
+
 Desktop (Mouse / Trackpad)
 -------------------------
 Move the map
