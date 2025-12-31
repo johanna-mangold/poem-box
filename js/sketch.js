@@ -1,14 +1,26 @@
 // sketch.js
-// p5.js + Matter.js: wuselnde Strichmännchen + roter Ball
-// Klick: Ball springt an zufällige Position und bekommt einen Impuls
+// p5.js + Matter.js: Stickfigures wuselnd in einer BOX auf deiner Map
+// Klick in die Box: roter Ball teleportiert zufällig + Kick
 
-// === Matter.js globals ===
+// =========================================================
+// MAP PLACEMENT (EDIT HERE)
+// =========================================================
+const MAP_X = 1200;   // X Position AUF DEINER MAP (Weltkoordinaten / px)
+const MAP_Y = -600;   // Y Position AUF DEINER MAP
+const CANVAS_W = 520; // Breite der p5-Box
+const CANVAS_H = 520; // Höhe der p5-Box
+
+// Optional: wenn dein Map-Root einen bestimmten Container hat, hier eintragen.
+// Standard: versucht "#mapLayer", sonst document.body.
+const PARENT_SELECTOR = "#mapLayer";
+
+// =========================================================
+// Matter.js globals
+// =========================================================
 let engine, world;
-
 let stickFigures = [];
 let ball;
 
-// === Params ===
 const numStickFigures = 10;
 const stickFigureSize = 30;
 const stickFigureSpeed = 2;
@@ -18,16 +30,16 @@ const ballShotForce = 0.05;
 let lastShotTime = 0;
 const shotCooldown = 500;
 
-// === Collision categories ===
 const CATEGORY_WALL = 0x0001;
 const CATEGORY_STICK_FIGURE = 0x0002;
 const CATEGORY_BALL = 0x0004;
 
-// Keep references so we can remove/update walls on resize
-let walls = [];
 const wallThickness = 10;
+let walls = [];
 
-// === StickFigure ===
+// =========================================================
+// StickFigure
+// =========================================================
 class StickFigure {
   constructor(x, y) {
     this.body = Matter.Bodies.circle(x, y, stickFigureSize / 2, {
@@ -43,10 +55,10 @@ class StickFigure {
 
     Matter.World.add(world, this.body);
 
-    const initialAngle = random(TWO_PI);
+    const a = random(TWO_PI);
     Matter.Body.setVelocity(this.body, {
-      x: cos(initialAngle) * stickFigureSpeed,
-      y: sin(initialAngle) * stickFigureSpeed
+      x: cos(a) * stickFigureSpeed,
+      y: sin(a) * stickFigureSpeed
     });
 
     this.stepOffset = random(TWO_PI);
@@ -60,6 +72,7 @@ class StickFigure {
     if (speed < stickFigureSpeed * 0.9 || speed === 0) {
       let dir = atan2(v.y, v.x);
       if (speed === 0) dir = random(TWO_PI);
+
       Matter.Body.setVelocity(this.body, {
         x: cos(dir) * stickFigureSpeed,
         y: sin(dir) * stickFigureSpeed
@@ -87,7 +100,7 @@ class StickFigure {
     const bodyLength = stickFigureSize * 0.6;
     line(0, 0, 0, bodyLength);
 
-    // legs (animated)
+    // legs
     const legLength = stickFigureSize * 0.6;
     const legSwing = sin(this.stepOffset) * stickFigureSize * 0.25;
 
@@ -98,7 +111,9 @@ class StickFigure {
   }
 }
 
-// === Ball ===
+// =========================================================
+// Ball
+// =========================================================
 class Ball {
   constructor(x, y) {
     this.body = Matter.Bodies.circle(x, y, ballSize / 2, {
@@ -108,7 +123,7 @@ class Ball {
       label: "ball",
       collisionFilter: {
         category: CATEGORY_BALL,
-        mask: CATEGORY_WALL // ignores stick figures
+        mask: CATEGORY_WALL // ignores stickfigures
       }
     });
     Matter.World.add(world, this.body);
@@ -121,24 +136,39 @@ class Ball {
     ellipse(pos.x, pos.y, ballSize, ballSize);
   }
 
-  teleportRandom() {
-    // random position with margin
+  teleportRandomWithKick() {
     const margin = max(ballSize * 2, wallThickness * 2);
     const nx = random(margin, width - margin);
     const ny = random(margin, height - margin);
 
     Matter.Body.setPosition(this.body, { x: nx, y: ny });
 
-    // also give it a little random kick
     const a = random(TWO_PI);
     const kick = 6;
     Matter.Body.setVelocity(this.body, { x: cos(a) * kick, y: sin(a) * kick });
   }
 }
 
-// === p5 setup ===
+// =========================================================
+// p5 setup/draw
+// =========================================================
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  const c = createCanvas(CANVAS_W, CANVAS_H);
+
+  // attach into your map layer (so it moves with your map)
+  const parent = document.querySelector(PARENT_SELECTOR) || document.body;
+  c.parent(parent);
+
+  // IMPORTANT: position the canvas on the map
+  // We do it inline so you don't HAVE to touch CSS files.
+  const el = c.elt;
+  el.style.position = "absolute";
+  el.style.left = MAP_X + "px";
+  el.style.top = MAP_Y + "px";
+  el.style.width = CANVAS_W + "px";
+  el.style.height = CANVAS_H + "px";
+  el.style.pointerEvents = "auto";
+  el.style.zIndex = "10"; // adjust if needed
 
   engine = Matter.Engine.create();
   world = engine.world;
@@ -156,7 +186,6 @@ function setup() {
   ball = new Ball(width / 2, height / 2);
 }
 
-// === p5 draw ===
 function draw() {
   background(220);
 
@@ -172,13 +201,44 @@ function draw() {
   checkBallLegCollisions();
 }
 
-// === Click: move ball random ===
+// Klick in die Box -> Ball random bewegen
 function mousePressed() {
+  // nur wenn Klick wirklich innerhalb dieser Canvas ist
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return;
   if (!ball) return;
-  ball.teleportRandom();
+  ball.teleportRandomWithKick();
 }
 
-// === collision check (legs vs ball) ===
+// =========================================================
+// Walls
+// =========================================================
+function buildWalls() {
+  const t = wallThickness;
+
+  const top = Matter.Bodies.rectangle(width / 2, -t / 2, width, t, {
+    isStatic: true,
+    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
+  });
+  const bottom = Matter.Bodies.rectangle(width / 2, height + t / 2, width, t, {
+    isStatic: true,
+    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
+  });
+  const left = Matter.Bodies.rectangle(-t / 2, height / 2, t, height, {
+    isStatic: true,
+    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
+  });
+  const right = Matter.Bodies.rectangle(width + t / 2, height / 2, t, height, {
+    isStatic: true,
+    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
+  });
+
+  walls = [top, bottom, left, right];
+  Matter.World.add(world, walls);
+}
+
+// =========================================================
+// Collision: legs vs ball (manual)
+// =========================================================
 function checkBallLegCollisions() {
   if (millis() - lastShotTime < shotCooldown) return;
 
@@ -228,53 +288,9 @@ function applyForceToBall(collidingStickFigure, collidingBall) {
   lastShotTime = millis();
 }
 
-// === Resize ===
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-
-  // remove old walls
-  for (const w of walls) Matter.World.remove(world, w);
-  walls = [];
-  buildWalls();
-
-  // keep bodies inside bounds a bit
-  if (ball) {
-    const m = max(ballSize * 2, wallThickness * 2);
-    const p = ball.body.position;
-    const clamped = {
-      x: constrain(p.x, m, width - m),
-      y: constrain(p.y, m, height - m)
-    };
-    Matter.Body.setPosition(ball.body, clamped);
-  }
-}
-
-// === Walls helper ===
-function buildWalls() {
-  const t = wallThickness;
-
-  const top = Matter.Bodies.rectangle(width / 2, -t / 2, width, t, {
-    isStatic: true,
-    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
-  });
-  const bottom = Matter.Bodies.rectangle(width / 2, height + t / 2, width, t, {
-    isStatic: true,
-    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
-  });
-  const left = Matter.Bodies.rectangle(-t / 2, height / 2, t, height, {
-    isStatic: true,
-    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
-  });
-  const right = Matter.Bodies.rectangle(width + t / 2, height / 2, t, height, {
-    isStatic: true,
-    collisionFilter: { category: CATEGORY_WALL, mask: CATEGORY_STICK_FIGURE | CATEGORY_BALL }
-  });
-
-  walls = [top, bottom, left, right];
-  Matter.World.add(world, walls);
-}
-
-// === p5 collide2D helpers (line-circle) ===
+// =========================================================
+// p5 collide2D helpers (line-circle)
+// =========================================================
 function collideLineCircle(x1, y1, x2, y2, xc, yc, dc) {
   let d = dist(x1, y1, x2, y2);
   if (d === 0) return false;
