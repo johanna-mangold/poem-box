@@ -1,44 +1,47 @@
 // sketch.js
-// p5.js + Matter.js: Stickfigures wuselnd in einer BOX auf deiner Map
+// p5.js + Matter.js: Stickfigures wuselnd IN deiner .p5POI-Box auf der Map
 // Klick in die Box: roter Ball teleportiert zufällig + Kick
+//
+// WICHTIG:
+// - In index.html muss Matter.js VOR dieser Datei geladen sein.
+// - Diese Datei mountet den Canvas in <div id="p5POI" class="p5POI"> ... </div>
 
 // =========================================================
-// MAP PLACEMENT (EDIT HERE)
+// CONFIG (EDIT HERE)
 // =========================================================
-const MAP_X = 0;   // X Position AUF DEINER MAP (Weltkoordinaten / px)
-const MAP_Y = 0;   // Y Position AUF DEINER MAP
-const CANVAS_W = 520; // Breite der p5-Box
-const CANVAS_H = 520; // Höhe der p5-Box
+const PARENT_SELECTOR = "#p5POI"; // <- dein vorhandener POI-Container
+const FALLBACK_W = 520;
+const FALLBACK_H = 520;
 
-// Optional: wenn dein Map-Root einen bestimmten Container hat, hier eintragen.
-// Standard: versucht "#mapLayer", sonst document.body.
-const PARENT_SELECTOR = "#p5POI";
-
-// =========================================================
-// Matter.js globals
-// =========================================================
-let engine, world;
-let stickFigures = [];
-let ball;
-
+// Parameter für die Strichmännchen
 const numStickFigures = 10;
 const stickFigureSize = 30;
 const stickFigureSpeed = 2;
 
+// Parameter für den Ball
 const ballSize = 15;
 const ballShotForce = 0.05;
 let lastShotTime = 0;
 const shotCooldown = 500;
 
+// Matter.js Physik-Engine und Welt
+let engine;
+let world;
+
+let stickFigures = [];
+let ball;
+
+// Kollisionskategorien
 const CATEGORY_WALL = 0x0001;
 const CATEGORY_STICK_FIGURE = 0x0002;
 const CATEGORY_BALL = 0x0004;
 
+// Wände
 const wallThickness = 10;
 let walls = [];
 
 // =========================================================
-// StickFigure
+// StickFigure Class
 // =========================================================
 class StickFigure {
   constructor(x, y) {
@@ -49,7 +52,7 @@ class StickFigure {
       label: "stickFigure",
       collisionFilter: {
         category: CATEGORY_STICK_FIGURE,
-        mask: CATEGORY_WALL | CATEGORY_STICK_FIGURE // ignores ball
+        mask: CATEGORY_WALL | CATEGORY_STICK_FIGURE // ignoriert den Ball
       }
     });
 
@@ -92,15 +95,15 @@ class StickFigure {
     strokeWeight(2);
     noFill();
 
-    // head
+    // Kopf
     const headSize = stickFigureSize * 0.8;
     ellipse(0, -headSize * 0.5, headSize, headSize);
 
-    // body line
+    // Körper
     const bodyLength = stickFigureSize * 0.6;
     line(0, 0, 0, bodyLength);
 
-    // legs
+    // Beine
     const legLength = stickFigureSize * 0.6;
     const legSwing = sin(this.stepOffset) * stickFigureSize * 0.25;
 
@@ -112,7 +115,7 @@ class StickFigure {
 }
 
 // =========================================================
-// Ball
+// Ball Class
 // =========================================================
 class Ball {
   constructor(x, y) {
@@ -123,7 +126,7 @@ class Ball {
       label: "ball",
       collisionFilter: {
         category: CATEGORY_BALL,
-        mask: CATEGORY_WALL // ignores stickfigures
+        mask: CATEGORY_WALL // ignoriert Stickfigures
       }
     });
     Matter.World.add(world, this.body);
@@ -150,32 +153,46 @@ class Ball {
 }
 
 // =========================================================
-// p5 setup/draw
+// p5.js setup/draw
 // =========================================================
 function setup() {
-  const c = createCanvas(CANVAS_W, CANVAS_H);
+  // Mount in existing POI container
+  const parent = document.querySelector(PARENT_SELECTOR);
 
-  // attach into your map layer (so it moves with your map)
-  const parent = document.querySelector(PARENT_SELECTOR) || document.body;
+  // If scripts load early, retry shortly
+  if (!parent) {
+    setTimeout(setup, 50);
+    return;
+  }
+
+  // Use the POI size as canvas size
+  const w = parent.clientWidth || FALLBACK_W;
+  const h = parent.clientHeight || FALLBACK_H;
+
+  const c = createCanvas(w, h);
   c.parent(parent);
 
-  // IMPORTANT: position the canvas on the map
-  // We do it inline so you don't HAVE to touch CSS files.
+  // Ensure it sits inside the POI box
   const el = c.elt;
   el.style.position = "absolute";
-  el.style.left = MAP_X + "px";
-  el.style.top = MAP_Y + "px";
-  el.style.width = CANVAS_W + "px";
-  el.style.height = CANVAS_H + "px";
+  el.style.left = "0px";
+  el.style.top = "0px";
+  el.style.width = "100%";
+  el.style.height = "100%";
   el.style.pointerEvents = "auto";
-  el.style.zIndex = "10"; // adjust if needed
+  el.style.zIndex = "6";
 
+  // Optional debug outline (remove later)
+  // el.style.outline = "2px solid magenta";
+
+  // Matter init
   engine = Matter.Engine.create();
   world = engine.world;
   world.gravity.y = 0;
 
   buildWalls();
 
+  // Create stick figures
   stickFigures = [];
   for (let i = 0; i < numStickFigures; i++) {
     const x = random(ballSize * 2, width - ballSize * 2);
@@ -183,10 +200,14 @@ function setup() {
     stickFigures.push(new StickFigure(x, y));
   }
 
+  // Create ball
   ball = new Ball(width / 2, height / 2);
 }
 
 function draw() {
+  // If setup hasn't finished yet, do nothing
+  if (!engine || !world || !ball) return;
+
   background(220);
 
   Matter.Engine.update(engine);
@@ -203,9 +224,11 @@ function draw() {
 
 // Klick in die Box -> Ball random bewegen
 function mousePressed() {
-  // nur wenn Klick wirklich innerhalb dieser Canvas ist
-  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return;
   if (!ball) return;
+
+  // only if click inside this canvas
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return;
+
   ball.teleportRandomWithKick();
 }
 
@@ -213,6 +236,12 @@ function mousePressed() {
 // Walls
 // =========================================================
 function buildWalls() {
+  // remove old walls (if any)
+  if (walls && walls.length) {
+    for (const w of walls) Matter.World.remove(world, w);
+  }
+  walls = [];
+
   const t = wallThickness;
 
   const top = Matter.Bodies.rectangle(width / 2, -t / 2, width, t, {
@@ -252,11 +281,13 @@ function checkBallLegCollisions() {
     const legLength = stickFigureSize * 0.6;
     const legSwing = sin(figure.stepOffset) * stickFigureSize * 0.25;
 
+    // Leg 1 world coords
     const leg1StartX = fp.x;
     const leg1StartY = fp.y + bodyLength;
     const leg1EndX = fp.x - legSwing;
     const leg1EndY = fp.y + bodyLength + legLength;
 
+    // Leg 2 world coords
     const leg2StartX = fp.x;
     const leg2StartY = fp.y + bodyLength;
     const leg2EndX = fp.x + legSwing;
