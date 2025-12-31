@@ -84,10 +84,12 @@
 
     const DOT_SIZE = 5;
 
-    // COLORS (fixed)
-    const BG = "#F000AD";
-    const YELLOW = "#ACE0EB";   // your value (even if it's not yellow)
-    const STROKE = "#3100F5";   // your value
+    // ===== COLORS =====
+    // Transparent background: we will use p.clear() in draw()
+    const YELLOW = "#2A00F5";   // fill of the big circle
+    const STROKE = "#9628F5";   // outline of the big circle
+    // If you want a solid BG instead of transparent, set BG_COLOR and use p.background(BG_COLOR)
+    // const BG_COLOR = "#F000AD";
 
     // ===== STATE =====
     let cxBase, cyBase;
@@ -155,6 +157,7 @@
       }
 
       draw() {
+        p.noStroke();
         p.fill(0);
         p.rect(this.pos.x - DOT_SIZE / 2, this.pos.y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
       }
@@ -202,8 +205,13 @@
       const cnv = p.createCanvas(CFG.w, CFG.h);
       cnv.parent(mount);
 
+      // performance
+      p.pixelDensity(1);
       p.frameRate(30);
-      p.noStroke();
+
+      // IMPORTANT: make canvas transparent
+      cnv.elt.style.background = "transparent";
+
       p.rectMode(p.CORNER);
 
       cxBase = p.width / 2;
@@ -221,7 +229,10 @@
     };
 
     p.draw = () => {
-      p.background(...BG);
+      // ✅ transparent background
+      p.clear();
+      // If you want solid BG instead, replace with:
+      // p.background(BG_COLOR);
 
       if (shakeLeft > 0) shakeLeft--;
       if (bounceLeft > 0) bounceLeft--;
@@ -230,23 +241,22 @@
 
       const breathe = p.sin(p.frameCount * 0.06) * 6;
       const yellowDiam = Y_BASE_DIAM + breathe;
-      const r = yellowDiam / 2;
 
-      // ✅ draw the "yellow" circle (fill + outline)
+      // ✅ draw big circle
       p.fill(YELLOW);
       p.stroke(STROKE);
       p.strokeWeight(2);
       p.ellipse(cx, cy, yellowDiam, yellowDiam);
-      p.noStroke();
 
+      // dots
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         const allowPass = (d.reentryDelay <= 0);
 
-        d.step(cx, cy, r, allowPass);
+        d.step(cx, cy, yellowDiam / 2, allowPass);
 
         if (bounceLeft > 0) {
-          d.bounceOffCircle(cx, cy, r);
+          d.bounceOffCircle(cx, cy, yellowDiam / 2);
         } else {
           if (d.reentryDelay > 0) d.reentryDelay--;
         }
