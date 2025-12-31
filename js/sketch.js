@@ -188,7 +188,8 @@ function draw() {
   if (!engine || !world || !ball) return;
 
   background(220);
-  Matter.Engine.update(engine);
+  Matter.Engine.update(engine, 1000 / 24);
+
 
   for (const figure of stickFigures) {
     figure.update();
