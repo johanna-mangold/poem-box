@@ -12,7 +12,7 @@ const CANVAS_H = 520; // Höhe der p5-Box
 
 // Optional: wenn dein Map-Root einen bestimmten Container hat, hier eintragen.
 // Standard: versucht "#mapLayer", sonst document.body.
-const PARENT_SELECTOR = "#mapLayer";
+const PARENT_SELECTOR = "#world";
 
 // =========================================================
 // Matter.js globals
