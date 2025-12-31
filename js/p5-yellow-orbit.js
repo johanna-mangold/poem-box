@@ -3,6 +3,12 @@
   const KMAP = window.KMAP;
   const world = document.getElementById("world");
   if (!world || typeof window.p5 !== "function") return;
+  let shakeFrames = 0;          // wie lange schütteln
+let shakePower = 0;           // aktuelle Schüttelstärke
+const SHAKE_DURATION = 18;    // frames
+const SHAKE_MAX = 14;         // px (Schütteln des Zentrums)
+const MASS_KICK_MULT = 2.2;   // wie stark alle rausfliegen
+
 
   // =========================
   // EDIT HERE (Map position + size)
@@ -13,7 +19,7 @@
     y: -500,    // Map-Y
     w: 320,     // Canvas width
     h: 320,     // Canvas height
-    pointerEvents: "none" // "none" = map drag geht durch; "auto" = p5 kann Maus/Touch abfangen
+    pointerEvents: "auto" // "none" = map drag geht durch; "auto" = p5 kann Maus/Touch abfangen
   };
 
   // Mount container (DOM element on the map)
