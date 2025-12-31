@@ -49,6 +49,35 @@ Or you can follow the white-dotted-lines, Dorothy.
 You can always teleport back to the starting point by clicking on the white dot on the bottom of the screen.
       `.trim()
     }
+
+     {
+      id: "text2",
+      x: 0,
+      y: 400,
+      w: 420,
+      h: 120,
+      text: `
+     reading 2025
+     #### fiction
+- [[the heart is deceitful above above all things - jt leroy]] **
+- [[no one belongs here more than you - miranda july]] **
+- [[plastic abyss - kate wilhelm]] **
+- [[stranger in the house - kate wilhelm ]]**
+- [[the green millenium - fritz leiber]] **
+- [[where late the sweet birds sang - kate wilhelm]] **
+- [[margaret and i - kate willhelm]] **
+- [[the first bad man - miranda july]] **
+- [[mysterious skin - scott heim]] **
+- [[nightbitch - rachel yoder]] **
+- [[the eyes are the best part - monika kim]] **
+- [[the word for world is forest  - ursula le guin]] **
+- [[my year of rest and relaxation - ottessa moshfegh]] **
+- [[lügen über meine mutter - daniela dröscher]] **
+- [[david pablo - joanna yulia kluge]] **
+- [[für den rest des lebens - zeruya shalev]]
+- [[the dream hotel - laila lalami]] **
+     
+      }
   ];
 
   function createTextBoxes(mapEl) {
