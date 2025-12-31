@@ -10,7 +10,7 @@
       x: 0,
       y: 0,
       w: 420,
-      h: 220,
+      h: 120,
       text: `
 How to navigate this map
 -------------------------
