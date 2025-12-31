@@ -16,20 +16,10 @@
 
 Desktop (Mouse / Trackpad)
 -------------------------
-Move the map
-------------
 
 Click and drag anywhere to move through the map.
 
 You can also use two-finger scrolling on a trackpad.
-
-Text boxes
-----------
-
-When your cursor is inside a text box, use the mouse wheel / trackpad scroll to read the text.
-
-Other elements
---------------
 
 Some elements react to hover or clicks.
 
@@ -38,13 +28,7 @@ If something doesn’t move, try dragging slightly outside of it.
 Tablet / Touch devices
 ----------------------
 
-Move the map
-------------
-
 Drag with one finger anywhere on the map to move.
-
-Text boxes
------------
 
 Swipe inside a text box to scroll its content.
 
