@@ -617,30 +617,6 @@
     font-size:11px;
     opacity:.35;
     pointer-events:none;
-    <body>
-  <!-- dein ganzer Map-/Canvas-/JS-Kram hier -->
-
-  <!-- Impressum-Link -->
-  <a
-    href="https://www.johanna-mangold.de/impressum"
-    target="_blank"
-    rel="noopener"
-    style="
-      position: fixed;
-      right: 8px;
-      bottom: 6px;
-      font-size: 11px;
-      opacity: 0.5;
-      color: #fefcf7;
-      text-decoration: none;
-      z-index: 9999;
-      pointer-events: auto;
-    "
-  >
-    Impressum
-  </a>
-</body>
-
   }
 </style>
 
@@ -1002,5 +978,26 @@ into this open womb
     el.innerHTML = `<b>build</b> ${BUILD_ID}<span class="muted">loaded ${loadedAt}</span>`;
   })();
   </script>
+
+  <!-- Impressum -->
+  <a
+    href="https://www.johanna-mangold.de/impressum"
+    target="_blank"
+    rel="noopener"
+    style="
+      position: fixed;
+      right: 8px;
+      bottom: 6px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      opacity: 0.5;
+      color: #fefcf7;
+      text-decoration: none;
+      z-index: 2147483647;
+      pointer-events: auto;
+    "
+  >
+    Impressum
+  </a>
 </body>
 </html>
