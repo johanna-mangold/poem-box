@@ -11,8 +11,8 @@
     id: "p5YellowOrbit",
     x: 300,     // Map-X (px in world space)
     y: -500,    // Map-Y
-    w: 520,     // Canvas width
-    h: 520,     // Canvas height
+    w: 320,     // Canvas width
+    h: 320,     // Canvas height
     pointerEvents: "none" // "none" = map drag geht durch; "auto" = p5 kann Maus/Touch abfangen
   };
 
