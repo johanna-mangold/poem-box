@@ -7,8 +7,8 @@
     id: "p5YellowOrbit",
     x: 300,
     y: -500,
-    w: 560,
-    h: 560,
+    w: 360,
+    h: 360,
     z: 999,              // hoch, damit sicher oben
     pointerEvents: "auto"
   };
