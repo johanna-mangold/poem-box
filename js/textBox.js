@@ -61,7 +61,7 @@ General notes
 
 The map has no fixed beginning or end - explore freely.
 
-Or you can follow the blue-dotted-lines, Dorothy.
+Or you can follow the white-dotted-lines, Dorothy.
 
 You can always teleport back to the starting point by clicking on the white dot on the bottom of the screen.
       `.trim()
