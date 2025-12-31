@@ -52,10 +52,10 @@ You can always teleport back to the starting point by clicking on the white dot 
 
      {
       id: "text2",
-      x: 0,
-      y: 400,
+      x: 199,
+      y: 1741,
       w: 420,
-      h: 120,
+      h: 820,
       text: `
      reading 2025
      #### fiction
