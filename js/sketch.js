@@ -5,8 +5,8 @@
 // =========================================================
 // MAP PLACEMENT (EDIT HERE)
 // =========================================================
-const MAP_X = 1200;   // X Position AUF DEINER MAP (Weltkoordinaten / px)
-const MAP_Y = -600;   // Y Position AUF DEINER MAP
+const MAP_X = 0;   // X Position AUF DEINER MAP (Weltkoordinaten / px)
+const MAP_Y = 0;   // Y Position AUF DEINER MAP
 const CANVAS_W = 520; // Breite der p5-Box
 const CANVAS_H = 520; // Höhe der p5-Box
 
