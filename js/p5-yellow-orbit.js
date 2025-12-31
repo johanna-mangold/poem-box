@@ -221,7 +221,7 @@
       // performance: cap FPS
       p.frameRate(30);
 
-      p.colorMode(p.HSB, 360, 100, 100);
+      p.colorMode(p.RGB, 255, 255, 255);
       p.noStroke();
       p.rectMode(p.CORNER);
 
@@ -255,8 +255,8 @@
       const yellowDiam = Y_BASE_DIAM + breathe;
       const r = yellowDiam / 2;
 
-      p.fill(60, 100, 100);
-      p.ellipse(cx, cy, yellowDiam, yellowDiam);
+      p.fill(#3100F5);
+      p.ellipse(#ACE0EB);
 
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
