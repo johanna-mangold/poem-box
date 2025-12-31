@@ -54,7 +54,7 @@ You can always teleport back to the starting point by clicking on the white dot 
       id: "text2",
       x: 199,
       y: -2741,
-      w: 520,
+      w: 490,
       h: 620,
       text: `
      reading 2025
@@ -77,12 +77,12 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
 
-#### short stories
+      #### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
 [[my evil mother - margaret atwood]]
-[[bereue, harlekin! sagte der ticktackmann - harlan ellison]]
-[[die stadt am rande der welt - harlan ellison]]
-[[ich muss schreien und habe keinen mund - harlan ellison]]
+[[bereue, harlekin! sagte der ticktackmann - h. ellison]]
+[[die stadt am rande der welt - h. ellison]]
+[[ich muss schreien und habe keinen mund - h. ellison]]
 [[two talented bastids - stephen king]]
 [[the fifth step - stephen king]]
 [[willie the weirdo - stephen king]]
@@ -97,12 +97,12 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[the infinity box - kate wilhelm]] 
 [[the time piece - kate wilhelm]] 
 
-#### non-fiction
+      #### non-fiction
 [[hexen - die unbesiegte macht der frauen - mona chollet]]
-[[kulturelle aneignung - lars distelhorst (nautilus)]]
+[[kulturelle aneignung - lars distelhorst]]
 [[six ways - aidan wachter]]
 [[we need your art - amy mcnee]]
-[[künstliche intelligenz und der neue faschismus - rainer mühlhoff (reclam)]]
+[[künstliche intelligenz u. der neue faschismus - rainer mühlhoff]]
 [[künstliche intelligenz und empathie - catrin misselhorn]]
 [[das seltsame und das gespenstische - mark fisher]]
      `.trim()
