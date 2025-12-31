@@ -23,7 +23,6 @@ You can also use two-finger scrolling on a trackpad.
 
 Many elements react to hover or clicks.
 
-If something doesn’t move, try dragging slightly outside of it.
 
 Tablet / Touch devices
 ----------------------
@@ -32,12 +31,6 @@ Drag with one finger anywhere on the map to move.
 
 Swipe inside a text box to scroll its content.
 
-Swipe outside the text box to move the map.
-
-Tip
-----
-
-If scrolling feels “stuck”, lift your finger and try again slightly inside or outside the box.
 
 General notes
 -------------
