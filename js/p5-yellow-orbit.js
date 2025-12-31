@@ -9,7 +9,7 @@
     y: 1400,
     w: 260,
     h: 260,
-    z: 999,              // hoch, damit sicher oben
+    z: 999,
     pointerEvents: "auto"
   };
 
@@ -30,7 +30,7 @@
     zIndex: String(CFG.z),
     pointerEvents: CFG.pointerEvents,
     display: "block",
-    touchAction: "none" // verhindert Browser-Scroll/Zoom-Gesten auf Touch
+    touchAction: "none"
   });
 
   // ===== Helper: visibility check (pause when offscreen) =====
@@ -41,21 +41,18 @@
     const r = mount.getBoundingClientRect();
     const v = vp.getBoundingClientRect();
 
-    // rect intersection
     return !(r.right < v.left || r.left > v.right || r.bottom < v.top || r.top > v.bottom);
   }
 
-  // ===== Sketch state stored outside so DOM handler can trigger it =====
+  // ===== Sketch trigger =====
   const SK = { trigger: null };
 
-  // Robust click/tap handler (survives map pointer capture)
   mount.addEventListener(
     "pointerdown",
     (e) => {
       e.preventDefault();
       e.stopPropagation();
       mount.setPointerCapture?.(e.pointerId);
-
       if (typeof SK.trigger === "function") SK.trigger();
     },
     { passive: false }
@@ -64,9 +61,6 @@
   new p5((p) => {
     // ===== CONFIG =====
     const NUM = 90;
-
-    // NOTE: with 260x260 canvas, 230 diameter is almost full-bleed.
-    // Keep it if you like the tight look.
     const Y_BASE_DIAM = 230;
 
     const ATTRACT_STRENGTH = 0.55;
@@ -90,12 +84,15 @@
 
     const DOT_SIZE = 5;
 
+    // COLORS (fixed)
+    const BG = [0, 0, 100];
+    const YELLOW = "#ACE0EB";   // your value (even if it's not yellow)
+    const STROKE = "#3100F5";   // your value
+
     // ===== STATE =====
     let cxBase, cyBase;
     let shakeLeft = 0;
     let bounceLeft = 0;
-
-    // offscreen loop state
     let running = true;
 
     class Dot {
@@ -115,13 +112,11 @@
         let a = ATTRACT_STRENGTH * (1.0 + (circleR * 1.25) / (d + 25));
         a = Math.min(a, ATTRACT_MAX);
 
-        // gate entry after shake so not all re-enter at once
         if (!allowPassIntoCircle && d < circleR + 30) a *= 0.15;
 
         this.vel.x += dirx * a;
         this.vel.y += diry * a;
 
-        // inside: swirl + jitter
         if (d < circleR) {
           this.vel.x += (-diry) * INSIDE_SWIRL * (circleR / Math.max(40, d));
           this.vel.y += ( dirx) * INSIDE_SWIRL * (circleR / Math.max(40, d));
@@ -156,13 +151,11 @@
         const sp = KICK_SPEED + p.random(0, KICK_RANDOM);
         this.vel.x += p.cos(ang) * sp;
         this.vel.y += p.sin(ang) * sp;
-
         this.reentryDelay = p.floor(p.random(REENTRY_DELAY_MIN, REENTRY_DELAY_MAX));
       }
 
       draw() {
         p.fill(0);
-        // rect is drawn from top-left; center it on the point
         p.rect(this.pos.x - DOT_SIZE / 2, this.pos.y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
       }
     }
@@ -176,31 +169,22 @@
     function getShakenCenter() {
       if (shakeLeft <= 0) return { cx: cxBase, cy: cyBase };
 
-      const t = shakeLeft / SHAKE_FRAMES; // 1..0
-      const ease = t * t;                 // ease-out
+      const t = shakeLeft / SHAKE_FRAMES;
+      const ease = t * t;
       const amp = SHAKE_MAX * ease;
 
-      // cheaper than noise(): purely random shake
       const nx = p.random(-1, 1);
       const ny = p.random(-1, 1);
-
-      // small extra jitter
       const jx = p.random(-0.6, 0.6);
       const jy = p.random(-0.6, 0.6);
 
-      return {
-        cx: cxBase + (nx + jx) * amp,
-        cy: cyBase + (ny + jy) * amp
-      };
+      return { cx: cxBase + (nx + jx) * amp, cy: cyBase + (ny + jy) * amp };
     }
 
     function triggerShakeAndKick() {
       shakeLeft = SHAKE_FRAMES;
       bounceLeft = BOUNCE_TIME_FRAMES;
-
-      for (let i = 0; i < dots.length; i++) {
-        dots[i].kickOut(cxBase, cyBase);
-      }
+      for (let i = 0; i < dots.length; i++) dots[i].kickOut(cxBase, cyBase);
     }
 
     function syncRunState() {
@@ -218,10 +202,7 @@
       const cnv = p.createCanvas(CFG.w, CFG.h);
       cnv.parent(mount);
 
-      // performance: cap FPS
       p.frameRate(30);
-
-      p.colorMode(p.RGB, 255, 255, 255);
       p.noStroke();
       p.rectMode(p.CORNER);
 
@@ -229,22 +210,18 @@
       cyBase = p.height / 2;
 
       initDots();
-
-      // expose trigger
       SK.trigger = triggerShakeAndKick;
 
-      // offscreen pause
       syncRunState();
       if (window.KMAP && typeof window.KMAP.onApply === "function") {
         window.KMAP.onApply(syncRunState);
       } else {
-        // fallback if map-core hook isn't present
         setInterval(syncRunState, 500);
       }
     };
 
     p.draw = () => {
-      p.background(0, 0, 100);
+      p.background(...BG);
 
       if (shakeLeft > 0) shakeLeft--;
       if (bounceLeft > 0) bounceLeft--;
@@ -255,8 +232,12 @@
       const yellowDiam = Y_BASE_DIAM + breathe;
       const r = yellowDiam / 2;
 
-      p.fill(#3100F5);
-      p.ellipse(#ACE0EB);
+      // ✅ draw the "yellow" circle (fill + outline)
+      p.fill(YELLOW);
+      p.stroke(STROKE);
+      p.strokeWeight(2);
+      p.ellipse(cx, cy, yellowDiam, yellowDiam);
+      p.noStroke();
 
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
