@@ -6,6 +6,30 @@
   const imageLayer = document.getElementById("imageLayer");
   if (!imageLayer) return;
 
+  // ============================
+  // NEW: separate layer for jump images (always reachable)
+  // ============================
+  const world =
+    KMAP.world ||
+    document.getElementById("world") ||
+    imageLayer.parentElement;
+
+  let jumpLayer = document.getElementById("jumpImageLayer");
+  if (!jumpLayer) {
+    jumpLayer = document.createElement("div");
+    jumpLayer.id = "jumpImageLayer";
+    Object.assign(jumpLayer.style, {
+      position: "absolute",
+      left: "0",
+      top: "0",
+      width: "0",
+      height: "0",
+      pointerEvents: "none",   // layer itself ignores input
+      zIndex: "9999"           // above your POIs inside #world
+    });
+    world.appendChild(jumpLayer);
+  }
+
   // Click vs Drag guard
   const DRAG_PX = 6;
   const DRAG_MS = 450;
@@ -53,7 +77,7 @@
   window.addEventListener("pointercancel", onGlobalPointerCancel, true);
 
   // ----------------------------
-  // Jump-on-hover helpers (NEW)
+  // Jump-on-hover helpers
   // ----------------------------
   function setWrapFromItem(wrap, item) {
     const x = (item.x ?? 0);
@@ -69,7 +93,7 @@
     wrap.style.setProperty("--op", `${op}`);
   }
 
-  // NEW: apply flip state to the <img> inside wrap (no CSS changes needed)
+  // apply flip state to the <img> inside wrap (no CSS changes needed)
   function applyFlipFromItem(wrap, item) {
     const imgEl = wrap.querySelector("img");
     if (!imgEl) return;
@@ -96,8 +120,7 @@
       if (Math.abs(dx) >= minMove || Math.abs(dy) >= minMove) break;
     }
 
-    // NEW: mirror horizontally depending on movement direction (X axis)
-    // left = -1, right = +1
+    // mirror horizontally depending on movement direction (X axis)
     if (dx !== 0) item._flipX = dx < 0 ? -1 : 1;
 
     item.x = (item.x ?? 0) + dx;
@@ -106,16 +129,26 @@
     item._lastJumpTs = now;
     setWrapFromItem(wrap, item);
     applyFlipFromItem(wrap, item);
+
+    // NEW: always keep the jumped item on top of other jump items
+    if (wrap.parentElement === jumpLayer) {
+      jumpLayer.appendChild(wrap);
+    }
   }
 
   function renderMapImages() {
     imageLayer.innerHTML = "";
+    jumpLayer.innerHTML = "";
 
     const list = Array.isArray(cfg.MAP_IMAGES) ? cfg.MAP_IMAGES : [];
     for (const item of list) {
       if (!item || !item.src) continue;
 
-      // NEW: default flip state
+      const hasGoto = !!item.goto;
+      const hasHref = !!item.href;
+      const hasJump = !!item.jumpOnHover;
+
+      // default flip state
       if (item._flipX !== -1 && item._flipX !== 1) item._flipX = 1;
 
       const wrap = document.createElement("div");
@@ -130,18 +163,14 @@
       img.decoding = "async";
       img.src = item.src;
 
-      // NEW: apply flip on first render
+      // apply flip on first render
       img.style.transformOrigin = "50% 50%";
       img.style.transform = `scaleX(${item._flipX})`;
 
       wrap.appendChild(img);
-      imageLayer.appendChild(wrap);
 
-      const hasGoto = !!item.goto;
-      const hasHref = !!item.href;
-
-      // NEW: jumpOnHover should be interactive (needs pointer events)
-      const hasJump = !!item.jumpOnHover;
+      // NEW: jump items go into their own top layer
+      (hasJump ? jumpLayer : imageLayer).appendChild(wrap);
 
       if (!hasGoto && !hasHref && !hasJump) {
         // non-interactive images should not interfere with pan
@@ -149,20 +178,16 @@
         continue;
       }
 
+      // Allow interaction on the wrapper itself
       wrap.style.pointerEvents = "auto";
 
-      // Cursor behavior: keep exactly as before for clickable items,
-      // and set pointer for jump-only so user notices it.
-      if (hasGoto || hasHref) {
-        wrap.style.cursor = "pointer";
-      } else if (hasJump) {
+      // Cursor behavior
+      if (hasGoto || hasHref || hasJump) {
         wrap.style.cursor = "pointer";
       }
 
-      // Record pointerdown, but do not block propagation;
-      // map-core can still start drag if user drags.
+      // Record pointerdown for clickables (goto/href), but do not block propagation
       wrap.addEventListener("pointerdown", (e) => {
-        // IMPORTANT: only for clickables (goto/href). Jump-only images shouldn't be treated as clicks.
         if (!hasGoto && !hasHref) return;
 
         active.set(e.pointerId, {
@@ -173,7 +198,7 @@
         });
       }, { passive: true });
 
-      // NEW: Jump on hover-enter (does not block map panning)
+      // Jump on hover-enter
       if (hasJump) {
         wrap.addEventListener("pointerenter", () => {
           jumpItem(item, wrap);
