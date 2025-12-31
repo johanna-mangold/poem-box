@@ -85,7 +85,7 @@
     const DOT_SIZE = 5;
 
     // COLORS (fixed)
-    const BG = [0, 0, 100];
+    const BG = "#F000AD";
     const YELLOW = "#ACE0EB";   // your value (even if it's not yellow)
     const STROKE = "#3100F5";   // your value
 
