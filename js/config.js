@@ -18,7 +18,7 @@
     ],
 
     LINES: {
-      color: "rgba(22, 0, 224, 1)",
+      color: "rgba(254, 252, 247, .8)",
       width: 1.6,
       dash:  [10, 16],
       cap:   "round",
