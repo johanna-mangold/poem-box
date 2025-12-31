@@ -7,8 +7,8 @@
     id: "p5YellowOrbit",
     x: -1954,
     y: 1300,
-    w: 660,
-    h: 660,
+    w: 460,
+    h: 460,
     z: 999,
     pointerEvents: "auto"
   };
