@@ -8,22 +8,21 @@
   // =========================
   const CFG = {
     id: "p5YellowOrbit",
-    x: 300,      // Map-X (world space px)
-    y: -500,     // Map-Y
-    w: 520,      // Canvas width
-    h: 520,      // Canvas height
+    x: 300,
+    y: -500,
+    w: 560,
+    h: 560,
     z: 30,
-    pointerEvents: "auto" // "auto" = canvas bekommt klicks; "none" = map drag geht durch
+    pointerEvents: "auto" // needs to be auto for clicking
   };
 
-  // Mount on the map (inside #world)
+  // Mount on the map
   let mount = document.getElementById(CFG.id);
   if (!mount) {
     mount = document.createElement("div");
     mount.id = CFG.id;
     world.appendChild(mount);
   }
-
   Object.assign(mount.style, {
     position: "absolute",
     left: CFG.x + "px",
@@ -31,147 +30,175 @@
     width: CFG.w + "px",
     height: CFG.h + "px",
     zIndex: String(CFG.z),
-    pointerEvents: CFG.pointerEvents
+    pointerEvents: CFG.pointerEvents,
+    display: "block"
   });
 
-  // prevent inline-block gaps
-  mount.style.display = "block";
-
-  // =========================
-  // p5 sketch (INSTANCE MODE)
-  // =========================
   new p5((p) => {
-    // --- Yellow circle ---
-    let yellowCircleX, yellowCircleY;
-    let yellowCircleBaseSize = 200; // diameter
-    let yellowCircleVibration = 5;  // size wobble
+    // ===== CONFIG (feel free to tweak) =====
+    const NUM = 170;
 
-    // --- Points ---
-    let blackPoints = [];
-    let numBlackPoints = 150;
-    let blackPointSize = 5;
+    // Yellow circle base
+    const Y_BASE_DIAM = 230;
 
-    // --- Interaction / motion params ---
-    let kickOutProbability = 0.005; // random fly-in chance
-    let kickOutSpeed = 10;
-    let rejoinOrbitDistance = 300;
+    // Pull into center
+    const ATTRACT_STRENGTH = 0.55; // stronger -> more aggressive suction
+    const ATTRACT_MAX = 10.0;      // clamp acceleration
+    const DAMPING = 0.975;         // global friction
 
-    // --- Shake params ---
-    let shakeFrames = 0;
-    const SHAKE_DURATION = 18; // frames
-    const SHAKE_MAX = 14;      // px
-    const MASS_KICK_MULT = 2.2;
+    // Movement inside circle
+    const INSIDE_JITTER = 0.55;    // random jitter force inside
+    const INSIDE_SWIRL = 0.045;    // swirl around center inside
 
-    class BlackPoint {
-      constructor(center_x, center_y, orbit_radius, orbit_angle) {
-        this.center_x = center_x;
-        this.center_y = center_y;
+    // Explosion / kick
+    const KICK_SPEED = 18;         // base outward impulse
+    const KICK_RANDOM = 10;        // randomness added to kick
 
-        this.orbitalRadius = orbit_radius;
-        this.orbitalAngle = orbit_angle;
-        this.orbitalSpeed = p.random(0.01, 0.03);
+    // Circle collision after shake (they bounce off circle for a while)
+    const BOUNCE_TIME_FRAMES = 160; // how long circle behaves like a hard collider
+    const BOUNCE_RESTITUTION = 1.15; // >1 feels "angry" / energetic
 
-        this.size = blackPointSize;
-        this.state = "orbiting"; // orbiting | flyingIn | kickedOut | bouncing
+    // Re-entry staging: after bounce phase, we gradually allow points to pass through again
+    const REENTRY_DELAY_MIN = 0;
+    const REENTRY_DELAY_MAX = 240;
 
-        this.x = this.center_x + this.orbitalRadius * p.cos(this.orbitalAngle);
-        this.y = this.center_y + this.orbitalRadius * p.sin(this.orbitalAngle);
+    // Shake feel (KRASS!)
+    const SHAKE_FRAMES = 26;
+    const SHAKE_MAX = 42;         // px offset (big!)
+    const SHAKE_NOISE_SPEED = 0.22;
 
-        this.velX = 0;
-        this.velY = 0;
+    // Visual
+    const DOT_SIZE = 5;
+
+    // ===== STATE =====
+    let cxBase, cyBase;
+
+    let shakeLeft = 0;
+    let bounceLeft = 0;
+    let shakeSeed = p.random(1000);
+
+    let yellowDiam = Y_BASE_DIAM;
+
+    class Dot {
+      constructor() {
+        this.reset();
       }
 
-      update() {
-        if (this.state === "orbiting") {
-          this.orbitalAngle += this.orbitalSpeed;
-          this.x = this.center_x + this.orbitalRadius * p.cos(this.orbitalAngle);
-          this.y = this.center_y + this.orbitalRadius * p.sin(this.orbitalAngle);
+      reset() {
+        // start around canvas area
+        this.pos = p.createVector(p.random(p.width), p.random(p.height));
+        this.vel = p.createVector(p.random(-1, 1), p.random(-1, 1));
+        this.reentryDelay = 0; // frames until it may pass into circle (used after shake)
+      }
 
-        } else if (this.state === "flyingIn") {
-          const angleToCenter = p.atan2(this.center_y - this.y, this.center_x - this.x);
-          this.velX = p.cos(angleToCenter) * kickOutSpeed * 0.5;
-          this.velY = p.sin(angleToCenter) * kickOutSpeed * 0.5;
-          this.x += this.velX;
-          this.y += this.velY;
+      // attract + inside behavior
+      step(targetX, targetY, circleR, allowPassIntoCircle) {
+        const dx = targetX - this.pos.x;
+        const dy = targetY - this.pos.y;
+        const d = Math.max(0.0001, Math.hypot(dx, dy));
+        const dirx = dx / d;
+        const diry = dy / d;
 
-          // reached yellow circle => kick out immediately
-          if (p.dist(this.x, this.y, this.center_x, this.center_y) < yellowCircleBaseSize / 2) {
-            this.kickOut(1);
-          }
+        // strong attraction (inverse-ish)
+        let a = ATTRACT_STRENGTH * (1.0 + (circleR * 1.25) / (d + 25));
+        a = Math.min(a, ATTRACT_MAX);
 
-        } else if (this.state === "kickedOut" || this.state === "bouncing") {
-          this.x += this.velX;
-          this.y += this.velY;
+        // If we are in "reentry delay" window, temporarily reduce attraction into the circle
+        // (still pulled, but less so, so they don't all pop in at once)
+        if (!allowPassIntoCircle && d < circleR + 30) {
+          a *= 0.15;
+        }
 
-          this.bounceOffWalls();
+        // apply attraction acceleration
+        this.vel.x += dirx * a;
+        this.vel.y += diry * a;
 
-          if (p.dist(this.x, this.y, this.center_x, this.center_y) > rejoinOrbitDistance) {
-            this.rejoinOrbit();
-          }
+        // inside circle: jitter + swirl for that “swarming interior”
+        if (d < circleR) {
+          // swirl (perpendicular to direction)
+          this.vel.x += (-diry) * INSIDE_SWIRL * (circleR / Math.max(40, d));
+          this.vel.y += ( dirx) * INSIDE_SWIRL * (circleR / Math.max(40, d));
+
+          // jitter
+          this.vel.x += p.random(-INSIDE_JITTER, INSIDE_JITTER);
+          this.vel.y += p.random(-INSIDE_JITTER, INSIDE_JITTER);
+        }
+
+        // damping
+        this.vel.mult(DAMPING);
+
+        // integrate
+        this.pos.add(this.vel);
+      }
+
+      bounceOffCircle(targetX, targetY, circleR) {
+        // If inside the circle, push it to boundary and reflect velocity
+        const vx = this.pos.x - targetX;
+        const vy = this.pos.y - targetY;
+        const d = Math.max(0.0001, Math.hypot(vx, vy));
+
+        if (d < circleR) {
+          // normal
+          const nx = vx / d;
+          const ny = vy / d;
+
+          // move to boundary + tiny epsilon
+          this.pos.x = targetX + nx * (circleR + 0.6);
+          this.pos.y = targetY + ny * (circleR + 0.6);
+
+          // reflect velocity
+          const dot = this.vel.x * nx + this.vel.y * ny;
+          this.vel.x = (this.vel.x - 2 * dot * nx) * BOUNCE_RESTITUTION;
+          this.vel.y = (this.vel.y - 2 * dot * ny) * BOUNCE_RESTITUTION;
         }
       }
 
-      display() {
+      kickOut(targetX, targetY) {
+        const ang = p.atan2(this.pos.y - targetY, this.pos.x - targetX);
+        const sp = KICK_SPEED + p.random(0, KICK_RANDOM);
+        this.vel.x += p.cos(ang) * sp;
+        this.vel.y += p.sin(ang) * sp;
+
+        // re-entry delay so they don't instantly all re-enter
+        this.reentryDelay = p.floor(p.random(REENTRY_DELAY_MIN, REENTRY_DELAY_MAX));
+      }
+
+      draw() {
         p.fill(0);
-        p.ellipse(this.x, this.y, this.size, this.size);
-      }
-
-      kickOut(mult = 1) {
-        const angleFromCenter = p.atan2(this.y - this.center_y, this.x - this.center_x);
-        this.velX = p.cos(angleFromCenter) * kickOutSpeed * mult;
-        this.velY = p.sin(angleFromCenter) * kickOutSpeed * mult;
-        this.state = "kickedOut";
-      }
-
-      bounceOffWalls() {
-        if (this.x < this.size / 2) {
-          this.x = this.size / 2;
-          this.velX *= -1;
-          this.state = "bouncing";
-        } else if (this.x > p.width - this.size / 2) {
-          this.x = p.width - this.size / 2;
-          this.velX *= -1;
-          this.state = "bouncing";
-        }
-
-        if (this.y < this.size / 2) {
-          this.y = this.size / 2;
-          this.velY *= -1;
-          this.state = "bouncing";
-        } else if (this.y > p.height - this.size / 2) {
-          this.y = p.height - this.size / 2;
-          this.velY *= -1;
-          this.state = "bouncing";
-        }
-      }
-
-      rejoinOrbit() {
-        this.state = "orbiting";
-        this.orbitalRadius = p.random(
-          yellowCircleBaseSize / 2 + blackPointSize,
-          p.min(p.width, p.height) / 2 - blackPointSize
-        );
-        this.orbitalAngle = p.random(p.TWO_PI);
-        this.orbitalSpeed = p.random(0.01, 0.03);
-
-        this.x = this.center_x + this.orbitalRadius * p.cos(this.orbitalAngle);
-        this.y = this.center_y + this.orbitalRadius * p.sin(this.orbitalAngle);
-
-        this.velX = 0;
-        this.velY = 0;
+        p.ellipse(this.pos.x, this.pos.y, DOT_SIZE, DOT_SIZE);
       }
     }
 
-    function initPoints() {
-      blackPoints = [];
-      for (let i = 0; i < numBlackPoints; i++) {
-        const orbitRadius = p.random(
-          yellowCircleBaseSize / 2 + blackPointSize,
-          p.min(p.width, p.height) / 2 - blackPointSize
-        );
-        const orbitAngle = p.random(p.TWO_PI);
-        blackPoints.push(new BlackPoint(yellowCircleX, yellowCircleY, orbitRadius, orbitAngle));
-      }
+    let dots = [];
+
+    function init() {
+      dots = [];
+      for (let i = 0; i < NUM; i++) dots.push(new Dot());
+    }
+
+    function getShakenCenter() {
+      // brutal shake: combine easing + noise + random jitter
+      if (shakeLeft <= 0) return { cx: cxBase, cy: cyBase };
+
+      const t = shakeLeft / SHAKE_FRAMES;      // 1..0
+      const ease = t * t;                      // ease-out
+      const amp = SHAKE_MAX * ease;
+
+      const n1 = p.noise(shakeSeed + p.frameCount * SHAKE_NOISE_SPEED);
+      const n2 = p.noise(shakeSeed + 999 + p.frameCount * SHAKE_NOISE_SPEED);
+
+      // map noise 0..1 to -1..1
+      const nx = (n1 * 2 - 1);
+      const ny = (n2 * 2 - 1);
+
+      // add a little raw jitter on top
+      const jx = p.random(-0.6, 0.6);
+      const jy = p.random(-0.6, 0.6);
+
+      const sx = (nx + jx) * amp;
+      const sy = (ny + jy) * amp;
+
+      return { cx: cxBase + sx, cy: cyBase + sy };
     }
 
     p.setup = () => {
@@ -181,78 +208,69 @@
       p.colorMode(p.HSB, 360, 100, 100);
       p.noStroke();
 
-      yellowCircleX = p.width / 2;
-      yellowCircleY = p.height / 2;
+      cxBase = p.width / 2;
+      cyBase = p.height / 2;
 
-      initPoints();
+      init();
     };
 
     p.draw = () => {
-      // Background
+      // background
       p.background(0, 0, 100);
 
-      // --- compute shake offset (ease out) ---
-      let shakePower = 0;
-      if (shakeFrames > 0) {
-        shakeFrames--;
-        const t = shakeFrames / SHAKE_DURATION; // 1 -> 0
-        shakePower = SHAKE_MAX * (t * t);
-      }
+      // decay timers
+      if (shakeLeft > 0) shakeLeft--;
+      if (bounceLeft > 0) bounceLeft--;
 
-      const sx = shakePower ? p.random(-shakePower, shakePower) : 0;
-      const sy = shakePower ? p.random(-shakePower, shakePower) : 0;
+      // center with shake
+      const { cx, cy } = getShakenCenter();
 
-      // "current" center used for this frame (draw + physics)
-      const cx = yellowCircleX + sx;
-      const cy = yellowCircleY + sy;
+      // yellow circle: also “breathes”
+      const breathe = p.sin(p.frameCount * 0.06) * 6;
+      yellowDiam = Y_BASE_DIAM + breathe;
+      const r = yellowDiam / 2;
 
-      // --- yellow ball (vibrate size + shake position) ---
-      const currentYellowCircleSize =
-        yellowCircleBaseSize + p.sin(p.frameCount * 0.05) * yellowCircleVibration;
-
+      // draw yellow
       p.fill(60, 100, 100);
-      p.ellipse(cx, cy, currentYellowCircleSize, currentYellowCircleSize);
+      p.ellipse(cx, cy, yellowDiam, yellowDiam);
 
-      // --- points ---
-      for (let i = 0; i < blackPoints.length; i++) {
-        const point = blackPoints[i];
+      // physics + draw dots
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
 
-        // IMPORTANT: update each point's center to the shaken center
-        point.center_x = cx;
-        point.center_y = cy;
+        // reentry gating: after a shake, each dot has its own delay before being allowed to pass into circle
+        const allowPass = (d.reentryDelay <= 0);
 
-        point.update();
-        point.display();
+        d.step(cx, cy, r, allowPass);
 
-        // random fly-in trigger
-        if (point.state === "orbiting" && p.random() < kickOutProbability) {
-          point.state = "flyingIn";
+        // during bounce phase, circle is a hard collider (they “prallen ab”)
+        if (bounceLeft > 0) {
+          d.bounceOffCircle(cx, cy, r);
+        } else {
+          // after bounce phase: decrease reentry delays gradually
+          if (d.reentryDelay > 0) d.reentryDelay--;
         }
+
+        d.draw();
       }
     };
 
-    // Click: shake + mass kick
+    // CLICK: krass shake + all dots kicked out + bounce phase begins
     p.mousePressed = () => {
-      // only if click is inside the canvas
       if (p.mouseX < 0 || p.mouseX > p.width || p.mouseY < 0 || p.mouseY > p.height) return;
 
-      shakeFrames = SHAKE_DURATION;
+      shakeLeft = SHAKE_FRAMES;
+      bounceLeft = BOUNCE_TIME_FRAMES;
+      shakeSeed = p.random(10000);
 
-      // kick all points at once
-      for (let i = 0; i < blackPoints.length; i++) {
-        const point = blackPoints[i];
-
-        // ensure direction is computed from current "base" center
-        point.center_x = yellowCircleX;
-        point.center_y = yellowCircleY;
-
-        point.kickOut(MASS_KICK_MULT);
+      // kick everything outward from the *base* center (stable direction)
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].kickOut(cxBase, cyBase);
       }
     };
 
-    // Optional: Touch support (mobile)
+    // Touch support
     p.touchStarted = () => {
-      // p5 calls touchStarted; return false to prevent default scroll
       p.mousePressed();
       return false;
     };
