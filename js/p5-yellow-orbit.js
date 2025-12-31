@@ -5,10 +5,10 @@
 
   const CFG = {
     id: "p5YellowOrbit",
-    x: -1804,
+    x: -1654,
     y: 1400,
-    w: 260,
-    h: 260,
+    w: 360,
+    h: 360,
     z: 999,
     pointerEvents: "auto"
   };
