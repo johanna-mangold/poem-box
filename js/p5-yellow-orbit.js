@@ -85,10 +85,11 @@
     const DOT_SIZE = 5;
 
     // ===== COLORS =====
-    // Transparent background: we will use p.clear() in draw()
     const YELLOW = "#2A00F5";   // fill of the big circle
     const STROKE = "#9628F5";   // outline of the big circle
-    // If you want a solid BG instead of transparent, set BG_COLOR and use p.background(BG_COLOR)
+    const DOT_COLOR = "#F031CF"; // ✅ dots color (edit here)
+
+    // If you want a solid BG instead of transparent:
     // const BG_COLOR = "#F000AD";
 
     // ===== STATE =====
@@ -157,8 +158,6 @@
       }
 
       draw() {
-        p.noStroke();
-        p.fill(#F031CF);
         p.rect(this.pos.x - DOT_SIZE / 2, this.pos.y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
       }
     }
@@ -209,7 +208,7 @@
       p.pixelDensity(1);
       p.frameRate(30);
 
-      // IMPORTANT: make canvas transparent
+      // transparent background
       cnv.elt.style.background = "transparent";
 
       p.rectMode(p.CORNER);
@@ -229,9 +228,9 @@
     };
 
     p.draw = () => {
-      // ✅ transparent background
+      // transparent background
       p.clear();
-      // If you want solid BG instead, replace with:
+      // solid background alternative:
       // p.background(BG_COLOR);
 
       if (shakeLeft > 0) shakeLeft--;
@@ -242,21 +241,26 @@
       const breathe = p.sin(p.frameCount * 0.06) * 6;
       const yellowDiam = Y_BASE_DIAM + breathe;
 
-      // ✅ draw big circle
+      // big circle
       p.fill(YELLOW);
       p.stroke(STROKE);
       p.strokeWeight(2);
       p.ellipse(cx, cy, yellowDiam, yellowDiam);
 
-      // dots
+      // dots (set style once)
+      p.noStroke();
+      p.fill(DOT_COLOR);
+
+      const r = yellowDiam / 2;
+
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i];
         const allowPass = (d.reentryDelay <= 0);
 
-        d.step(cx, cy, yellowDiam / 2, allowPass);
+        d.step(cx, cy, r, allowPass);
 
         if (bounceLeft > 0) {
-          d.bounceOffCircle(cx, cy, yellowDiam / 2);
+          d.bounceOffCircle(cx, cy, r);
         } else {
           if (d.reentryDelay > 0) d.reentryDelay--;
         }
