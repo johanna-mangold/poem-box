@@ -522,6 +522,29 @@
   }
   .p5Reset:active{ transform: translateX(-50%) scale(0.96); }
 
+  /* P5 STICKFIGURES (new) */
+.p5StickPOI{
+  position:absolute;
+  left: 0px;     /* <- HIER X auf der Map */
+  top:  0px;    /* <- HIER Y auf der Map */
+  width: 520px;     /* <- HIER Breite */
+  height: 520px;    /* <- HIER Höhe */
+
+  pointer-events:auto;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+
+  z-index: 5;
+}
+.p5StickPOI canvas{
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  touch-action:none;
+}
+
+
   /* GENERATOR (typewriter) */
   .genPOI{
     position:absolute;
@@ -743,6 +766,9 @@ into this open womb
       <div class="p5POI" id="p5POI" aria-label="poem grid game">
         <button class="p5Reset" id="p5Reset" type="button" aria-label="reset"></button>
       </div>
+
+      <div class="p5StickPOI" id="p5StickPOI" aria-label="stick figures physics"></div>
+
 
       <div class="genPOI" id="genPOI" aria-label="poem generator">
         <pre id="genPoemBox" class="genBox" aria-label="Tap / click to generate poem">click</pre>
