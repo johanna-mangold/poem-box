@@ -813,42 +813,8 @@ into this open womb
       const PAGES = opts.pages;
       let index = 0;
 
-     function render(){
-  const baseSrc = PAGES[index];
-  let attempt = 0;
-
-  const tryLoad = () => {
-    // nur beim Retry cache-busten (damit "hängende" CDN-Responses neu kommen)
-    const src = attempt === 0 ? baseSrc : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
-
-    // Direkt im echten <img> laden (wichtig: onerror/onload greifen zuverlässig)
-    img.onload = () => {
-      img.style.opacity = "0.999";
-      requestAnimationFrame(() => { img.style.opacity = "1"; });
-      img.onload = null;
-      img.onerror = null;
-    };
-
-    img.onerror = () => {
-      attempt++;
-      if (attempt <= 3){
-        // kurze Pause, dann erneut
-        setTimeout(tryLoad, 250 + attempt * 250);
-      } else {
-        console.warn("Zine image failed after retries:", baseSrc);
-        img.onload = null;
-        img.onerror = null;
-      }
-    };
-
-    img.src = src;
-  };
-
-  cnt.textContent =
-    `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
-
-  tryLoad();
-}
+      function render(){
+        const src = PAGES[index];
 
         const pre = new Image();
         pre.onload = () => {
