@@ -45,7 +45,7 @@
     white-space:pre-wrap;
 
     background:#fefcf7;
-    color:#0000ff;     
+    color:#0000ff;
     text-shadow: 0 0 6px rgba(255,0,255,.35);
 
     -webkit-overflow-scrolling: touch;
@@ -69,26 +69,27 @@
     border-bottom-color:#404040;
     box-shadow: inset 0 0 0 1px #000;
   }
-/* small label above textbox */
-.map-textbox-label{
-  position:absolute;
-  right: 0;
-  top: -18px;
 
-  font-family:"Roboto Mono", monospace;
-  font-size:11px;
-  line-height:1;
+  /* small label above textbox */
+  .map-textbox-label{
+    position:absolute;
+    right: 0;
+    top: -18px;
 
-  color:#ffffff;
-  opacity:.6;
+    font-family:"Roboto Mono", monospace;
+    font-size:11px;
+    line-height:1;
 
-  pointer-events:none;
-  user-select:none;
-  -webkit-user-select:none;
-}
+    color:#ffffff;
+    opacity:.6;
+
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
+  }
 
   /* ==========================================================
-     ZINE READER (20 DOPPELSEITEN)
+     ZINE READER
      ========================================================== */
 
   .zinePOI{
@@ -115,7 +116,13 @@
     top:  -1680px;
   }
 
-  /* statt #zineImg (damit auch zineImg_2 klappt) */
+  /* Position vom dritten Zine */
+  .zinePOI.z3{
+    left: 1500px;
+    top:  -1680px;
+  }
+
+  /* statt #zineImg (damit auch zineImg_2 / _3 klappt) */
   .zinePOI img{
     position:absolute;
     inset:0;
@@ -634,21 +641,21 @@
 
   <div id="viewport">
     <div id="world">
-     //  <div class="node" style="left:0px; top:0px;">start (0,0)</div>
-     //  <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
-     //  <div class="node" style="left:-720px; top:520px;">node links/unten</div>
+      <!--
+      <div class="node" style="left:0px; top:0px;">start (0,0)</div>
+      <div class="node" style="left:900px; top:-420px;">node rechts/oben</div>
+      <div class="node" style="left:-720px; top:520px;">node links/unten</div>
+      -->
 
       <div id="imageLayer" aria-label="images"></div>
       <div id="videoLayer" aria-label="videos"></div>
 
       <!-- ===========================
-           ZINE POI
+           ZINE 1
            =========================== -->
       <div class="zinePOI" id="zinePOI" aria-label="zine reader">
         <img id="zineImg" alt="zine spread" draggable="false" />
-        <div class="zineLabelTop">
-          click on zine <span class="zineArrow">↓</span>
-        </div>
+        <div class="zineLabelTop">click on zine <span class="zineArrow">↓</span></div>
 
         <div class="zineHit left" id="zinePrev" aria-label="previous page"></div>
         <div class="zineHit right" id="zineNext" aria-label="next page"></div>
@@ -657,7 +664,9 @@
         <div class="zineCounter" id="zineCounter">01/20</div>
       </div>
 
-      <!-- ZINE 2 (NEU) -->
+      <!-- ===========================
+           ZINE 2
+           =========================== -->
       <div class="zinePOI z2" id="zinePOI_2" aria-label="zine 2">
         <img id="zineImg_2" alt="zine 2" draggable="false" />
         <div class="zineLabelTop">click on zine <span class="zineArrow">↓</span></div>
@@ -668,6 +677,21 @@
         <div class="zineHint left">←</div>
         <div class="zineHint right">→</div>
         <div class="zineCounter" id="zineCounter_2">01/01</div>
+      </div>
+
+      <!-- ===========================
+           ZINE 3
+           =========================== -->
+      <div class="zinePOI z3" id="zinePOI_3" aria-label="zine 3">
+        <img id="zineImg_3" alt="zine 3" draggable="false" />
+        <div class="zineLabelTop">click on zine <span class="zineArrow">↓</span></div>
+
+        <div class="zineHit left"  id="zinePrev_3" aria-label="previous page zine 3"></div>
+        <div class="zineHit right" id="zineNext_3" aria-label="next page zine 3"></div>
+
+        <div class="zineHint left">←</div>
+        <div class="zineHint right">→</div>
+        <div class="zineCounter" id="zineCounter_3">01/01</div>
       </div>
 
       <div class="flipPOI" id="flipPOI" aria-label="animation">
@@ -814,11 +838,8 @@ into this open womb
       "https://static.wixstatic.com/media/0f3578_777354008ad942c090462e0c848e74db~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_777354008ad942c090462e0c848e74db~mv2.png"
     ];
 
-    /* ZINE 2: trage hier deine eigenen URLs ein.
-       Ich lasse es absichtlich erst mal mit 1 Seite laufen,
-       damit es sicher lädt und du nur die Links austauschst. */
     const ZINE_PAGES_2 = [
-      "https://static.wixstatic.com/media/0f3578_dd4be280948147399176eae6287858f5~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_dd4be280948147399176eae6287858f5~mv2.png", 
+      "https://static.wixstatic.com/media/0f3578_dd4be280948147399176eae6287858f5~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_dd4be280948147399176eae6287858f5~mv2.png",
       "https://static.wixstatic.com/media/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png",
       "https://static.wixstatic.com/media/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png",
       "https://static.wixstatic.com/media/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png",
@@ -838,7 +859,11 @@ into this open womb
       "https://static.wixstatic.com/media/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png",
       "https://static.wixstatic.com/media/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png",
       "https://static.wixstatic.com/media/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png"
-      
+    ];
+
+    /* ZINE 3: aktuell 1 Seite – tausche/ergänze deine URLs */
+    const ZINE_PAGES_3 = [
+      "https://static.wixstatic.com/media/0f3578_dd4be280948147399176eae6287858f5~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_dd4be280948147399176eae6287858f5~mv2.png"
     ];
 
     initOneZine({
@@ -853,6 +878,13 @@ into this open womb
       prevId:"zinePrev_2", nextId:"zineNext_2",
       counterId:"zineCounter_2",
       pages: ZINE_PAGES_2
+    });
+
+    initOneZine({
+      rootId:"zinePOI_3", imgId:"zineImg_3",
+      prevId:"zinePrev_3", nextId:"zineNext_3",
+      counterId:"zineCounter_3",
+      pages: ZINE_PAGES_3
     });
   })();
   </script>
