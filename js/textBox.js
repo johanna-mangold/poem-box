@@ -54,7 +54,7 @@ You can always teleport back to the starting point by clicking on the white dot 
       id: "text2",
       x: 199,
       y: -2741,
-      w: 420,
+      w: 520,
       h: 620,
       text: `
      reading 2025
@@ -105,7 +105,6 @@ You can always teleport back to the starting point by clicking on the white dot 
 - [[künstliche intelligenz und der neue faschismus - rainer mühlhoff (reclam)]] **
 - [[künstliche intelligenz und empathie - catrin misselhorn]] **
 - [[das seltsame und das gespenstische - mark fisher]] **
-- [[effektive mikroorganismen und ihre praktische anwendung - dr. anne katharina zschocke]] **
      `.trim()
       }
   ];
