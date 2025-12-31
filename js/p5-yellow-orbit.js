@@ -7,8 +7,8 @@
     id: "p5YellowOrbit",
     x: -1804,
     y: 1400,
-    w: 360,
-    h: 360,
+    w: 260,
+    h: 260,
     z: 999,              // hoch, damit sicher oben
     pointerEvents: "auto"
   };
@@ -30,27 +30,30 @@
     zIndex: String(CFG.z),
     pointerEvents: CFG.pointerEvents,
     display: "block",
-    // optional, verhindert Browser-Scroll/Zoom-Gesten auf Touch
-    touchAction: "none"
+    touchAction: "none" // verhindert Browser-Scroll/Zoom-Gesten auf Touch
   });
 
-  // Optional: sichtbarer Debug-Rahmen (nur zum Testen)
-  // mount.style.outline = "2px solid rgba(255,0,0,.35)";
+  // ===== Helper: visibility check (pause when offscreen) =====
+  function isOnScreen() {
+    const vp = document.getElementById("viewport");
+    if (!vp) return true;
+
+    const r = mount.getBoundingClientRect();
+    const v = vp.getBoundingClientRect();
+
+    // rect intersection
+    return !(r.right < v.left || r.left > v.right || r.bottom < v.top || r.top > v.bottom);
+  }
 
   // ===== Sketch state stored outside so DOM handler can trigger it =====
-  const SK = {
-    trigger: null // wird nach p5-init gesetzt
-  };
+  const SK = { trigger: null };
 
-  // DOM pointer handler: super robust gegen map-core pointer capture
+  // Robust click/tap handler (survives map pointer capture)
   mount.addEventListener(
     "pointerdown",
     (e) => {
-      // Klick/Tap nur hier, nicht die Map
       e.preventDefault();
       e.stopPropagation();
-
-      // Fokus damit manche Browser Mouse Events nicht verschlucken
       mount.setPointerCapture?.(e.pointerId);
 
       if (typeof SK.trigger === "function") SK.trigger();
@@ -60,28 +63,30 @@
 
   new p5((p) => {
     // ===== CONFIG =====
-    const NUM = 170;
+    const NUM = 90;
+
+    // NOTE: with 260x260 canvas, 230 diameter is almost full-bleed.
+    // Keep it if you like the tight look.
     const Y_BASE_DIAM = 230;
 
     const ATTRACT_STRENGTH = 0.55;
     const ATTRACT_MAX = 10.0;
     const DAMPING = 0.975;
 
-    const INSIDE_JITTER = 0.55;
+    const INSIDE_JITTER = 0.35;
     const INSIDE_SWIRL = 0.045;
 
     const KICK_SPEED = 18;
     const KICK_RANDOM = 10;
 
-    const BOUNCE_TIME_FRAMES = 160;
+    const BOUNCE_TIME_FRAMES = 110;
     const BOUNCE_RESTITUTION = 1.15;
 
     const REENTRY_DELAY_MIN = 0;
     const REENTRY_DELAY_MAX = 240;
 
-    const SHAKE_FRAMES = 26;
+    const SHAKE_FRAMES = 18;
     const SHAKE_MAX = 42;
-    const SHAKE_NOISE_SPEED = 0.22;
 
     const DOT_SIZE = 5;
 
@@ -89,7 +94,9 @@
     let cxBase, cyBase;
     let shakeLeft = 0;
     let bounceLeft = 0;
-    let shakeSeed = 123.45;
+
+    // offscreen loop state
+    let running = true;
 
     class Dot {
       constructor() {
@@ -108,11 +115,13 @@
         let a = ATTRACT_STRENGTH * (1.0 + (circleR * 1.25) / (d + 25));
         a = Math.min(a, ATTRACT_MAX);
 
+        // gate entry after shake so not all re-enter at once
         if (!allowPassIntoCircle && d < circleR + 30) a *= 0.15;
 
         this.vel.x += dirx * a;
         this.vel.y += diry * a;
 
+        // inside: swirl + jitter
         if (d < circleR) {
           this.vel.x += (-diry) * INSIDE_SWIRL * (circleR / Math.max(40, d));
           this.vel.y += ( dirx) * INSIDE_SWIRL * (circleR / Math.max(40, d));
@@ -128,6 +137,7 @@
         const vx = this.pos.x - targetX;
         const vy = this.pos.y - targetY;
         const d = Math.max(0.0001, Math.hypot(vx, vy));
+
         if (d < circleR) {
           const nx = vx / d;
           const ny = vy / d;
@@ -152,7 +162,8 @@
 
       draw() {
         p.fill(0);
-        p.ellipse(this.pos.x, this.pos.y, DOT_SIZE, DOT_SIZE);
+        // rect is drawn from top-left; center it on the point
+        p.rect(this.pos.x - DOT_SIZE / 2, this.pos.y - DOT_SIZE / 2, DOT_SIZE, DOT_SIZE);
       }
     }
 
@@ -165,15 +176,15 @@
     function getShakenCenter() {
       if (shakeLeft <= 0) return { cx: cxBase, cy: cyBase };
 
-      const t = shakeLeft / SHAKE_FRAMES;
-      const ease = t * t;
+      const t = shakeLeft / SHAKE_FRAMES; // 1..0
+      const ease = t * t;                 // ease-out
       const amp = SHAKE_MAX * ease;
 
-      const n1 = p.noise(shakeSeed + p.frameCount * SHAKE_NOISE_SPEED);
-      const n2 = p.noise(shakeSeed + 999 + p.frameCount * SHAKE_NOISE_SPEED);
-      const nx = (n1 * 2 - 1);
-      const ny = (n2 * 2 - 1);
+      // cheaper than noise(): purely random shake
+      const nx = p.random(-1, 1);
+      const ny = p.random(-1, 1);
 
+      // small extra jitter
       const jx = p.random(-0.6, 0.6);
       const jy = p.random(-0.6, 0.6);
 
@@ -186,10 +197,20 @@
     function triggerShakeAndKick() {
       shakeLeft = SHAKE_FRAMES;
       bounceLeft = BOUNCE_TIME_FRAMES;
-      shakeSeed = p.random(10000);
 
       for (let i = 0; i < dots.length; i++) {
         dots[i].kickOut(cxBase, cyBase);
+      }
+    }
+
+    function syncRunState() {
+      const visible = isOnScreen();
+      if (visible && !running) {
+        p.loop();
+        running = true;
+      } else if (!visible && running) {
+        p.noLoop();
+        running = false;
       }
     }
 
@@ -197,16 +218,29 @@
       const cnv = p.createCanvas(CFG.w, CFG.h);
       cnv.parent(mount);
 
+      // performance: cap FPS
+      p.frameRate(30);
+
       p.colorMode(p.HSB, 360, 100, 100);
       p.noStroke();
+      p.rectMode(p.CORNER);
 
       cxBase = p.width / 2;
       cyBase = p.height / 2;
 
       initDots();
 
-      // expose trigger to DOM handler
+      // expose trigger
       SK.trigger = triggerShakeAndKick;
+
+      // offscreen pause
+      syncRunState();
+      if (window.KMAP && typeof window.KMAP.onApply === "function") {
+        window.KMAP.onApply(syncRunState);
+      } else {
+        // fallback if map-core hook isn't present
+        setInterval(syncRunState, 500);
+      }
     };
 
     p.draw = () => {
