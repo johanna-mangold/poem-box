@@ -5,8 +5,8 @@
 
   const CFG = {
     id: "p5YellowOrbit",
-    x: 300,
-    y: -500,
+    x: -1804,
+    y: 1400,
     w: 360,
     h: 360,
     z: 999,              // hoch, damit sicher oben
