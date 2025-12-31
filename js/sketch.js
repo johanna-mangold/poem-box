@@ -9,7 +9,7 @@
 // =========================================================
 // CONFIG (EDIT HERE)
 // =========================================================
-const PARENT_SELECTOR = "#p5StickPOI"; // <- NEUER Container (nicht #p5POI!)
+const PARENT_SELECTOR = "#p5StickPOI"; // <- dein neuer Container
 const FALLBACK_W = 520;
 const FALLBACK_H = 520;
 
@@ -39,6 +39,9 @@ const CATEGORY_BALL = 0x0004;
 // Wände
 const wallThickness = 10;
 let walls = [];
+
+// Guard: setup nur einmal wirklich ausführen
+let __didInit = false;
 
 // =========================================================
 // StickFigure Class
@@ -156,12 +159,25 @@ class Ball {
 // p5.js setup/draw
 // =========================================================
 function setup() {
+  // wenn p5 setup aus irgendeinem Grund doppelt kommt: raus
+  if (__didInit) return;
+
   const parent = document.querySelector(PARENT_SELECTOR);
 
   // wenn DOM noch nicht ready / element noch nicht da -> retry
   if (!parent) {
     setTimeout(setup, 50);
     return;
+  }
+
+  // Ab hier: wirklich initialisieren
+  __didInit = true;
+
+  // ✅ Damit map-core Klick/Touch in diesem Element als "POI" akzeptiert
+  // (sonst kann es passieren, dass die Map den Klick als Drag interpretiert)
+  const KMAP = window.KMAP;
+  if (KMAP && typeof KMAP.registerPOIHitTest === "function") {
+    KMAP.registerPOIHitTest(t => t && (t === parent || parent.contains(t)));
   }
 
   const w = parent.clientWidth || FALLBACK_W;
@@ -179,12 +195,14 @@ function setup() {
   el.style.pointerEvents = "auto";
   el.style.zIndex = "6";
 
+  // Matter init
   engine = Matter.Engine.create();
   world = engine.world;
   world.gravity.y = 0;
 
   buildWalls();
 
+  // Create stick figures
   stickFigures = [];
   for (let i = 0; i < numStickFigures; i++) {
     const x = random(ballSize * 2, width - ballSize * 2);
@@ -192,6 +210,7 @@ function setup() {
     stickFigures.push(new StickFigure(x, y));
   }
 
+  // Create ball
   ball = new Ball(width / 2, height / 2);
 }
 
