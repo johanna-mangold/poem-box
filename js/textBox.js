@@ -52,7 +52,7 @@ You can always teleport back to the starting point by clicking on the white dot 
       text: `
         reading 2025
      #### fiction
-[[the heart is deceitful above above all things - jt leroy]]
+[[the heart is deceitful above all things - jt leroy]]
 [[no one belongs here more than you - miranda july]]
 [[plastic abyss - kate wilhelm]]
 [[stranger in the house - kate wilhelm ]]
