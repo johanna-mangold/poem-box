@@ -57,7 +57,7 @@
         id: "t1",
         x: -474,
         y: 928, 
-        text: "she digs into the finest fluff\nwith gentle claws between fringes she plucks", 
+        text: "she digs into the finest fluff\nwith gentle claws\nbetween fringes she plucks", 
         fontSize: 13,
         color: "#fefcf7",
         maxWidth: null,
