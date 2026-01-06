@@ -59,7 +59,7 @@
         y: 300, 
         text: "hello map this is a very long sentence, can you please put it in one long line over the screen", 
         fontSize: 13,
-        color: "#FFFFFF",
+        color: "#fefcf7",
         maxWidth: 620,
         rotate: 0
       }
