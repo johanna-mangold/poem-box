@@ -151,6 +151,8 @@ habe ich dich zu dünn gemacht?
 verdreht sich wieder zurück 
 die zunge schleift übers laminat
 da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
+
+{{img:https://static.wixstatic.com/media/0f3578_9d87ba09aaa249d88484af05e2212065~mv2.jpg/v1/fill/w_480,h_696,al_c,lg_1,q_80,enc_avif,quality_auto/0f3578_9d87ba09aaa249d88484af05e2212065~mv2.jpg}}
   
   `.trim()
     }
