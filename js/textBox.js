@@ -69,6 +69,7 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[david pablo - joanna yulia kluge]] 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
+{{img:https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png}}
 
       #### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
