@@ -111,24 +111,21 @@ reading 2025
       **
       they do not work like this.  
 they must be reconfigured.
-
+//**
 turned over,  
 thrown down to the floor,  
-out the window.
-
+out the window
+**
 modular.  
 co-co-coo.
-
 they refuse to plush correctly,  
 refuse to grow into streets,  
 into rails,  
 into connection.
-
 a strike.
-
 they want to be different.  
 their own.
-
+//**
 to cloak themselves,  
 to hide the paths,  
 to show no roads at all
