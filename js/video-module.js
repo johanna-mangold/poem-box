@@ -36,42 +36,15 @@
       preload: "metadata",   // "none" | "metadata" | "auto"
 
       // Styling
-      radius: 14,
       z: 50,
       opacity: 1,
       blendMode: "normal",   // e.g. "screen", "multiply"
       shadow: true,          // add soft shadow like your zines
       border: false,         // optional thin border
       borderColor: "rgba(254,252,247,.25)",
-      bg: "transparent",     // behind video
+      bg: "transparent",     // behind video (shows as letterbox when using contain)
       poster: ""             // optional: "assets/videos/clip1.jpg"
-    },
-
-    // example 2 (sound on)
-    // {
-    //   id: "vid2",
-    //   x: 1200,
-    //   y: -900,
-    //   w: 240,
-    //   h: 240,
-    //   src: "assets/videos/clip2.mp4",
-    //   loop: true,
-    //   autoplay: false,     // with sound: recommend false, user clicks to start
-    //   sound: true,
-    //   volume: 0.6,
-    //   clickToggle: true,
-    //   hoverPlay: false,
-    //   preload: "metadata",
-    //   radius: 18,
-    //   z: 60,
-    //   opacity: 1,
-    //   blendMode: "normal",
-    //   shadow: true,
-    //   border: true,
-    //   borderColor: "rgba(254,252,247,.22)",
-    //   bg: "rgba(0,0,0,.15)",
-    //   poster: "assets/videos/clip2.jpg"
-    // }
+    }
   ];
 
   // ====== inject minimal CSS once ======
@@ -89,13 +62,15 @@
         pointer-events: auto;
         touch-action: manipulation;
         background: transparent;
+        border-radius: 0 !important; /* ✅ no rounded corners */
       }
 
       .kmap-video video {
         width: 100%;
         height: 100%;
         display: block;
-        object-fit: cover;
+        object-fit: contain;           /* ✅ show full video, no cropping */
+        object-position: center center;
         background: transparent;
       }
 
@@ -159,7 +134,7 @@
       width: (cfg.w || 240) + "px",
       height: (cfg.h || 135) + "px",
       zIndex: String(cfg.z ?? 50),
-      borderRadius: (cfg.radius ?? 14) + "px",
+      borderRadius: "0px",            // ✅ force sharp corners
       opacity: String(cfg.opacity ?? 1),
       mixBlendMode: cfg.blendMode || "normal",
       background: cfg.bg || "transparent"
@@ -183,9 +158,7 @@
     v.preload = cfg.preload || "metadata";
     v.controls = false;
 
-    // sound handling:
-    // - browsers allow autoplay mostly only when muted
-    // - if sound=true, recommend autoplay=false (user gesture)
+    // sound handling
     const wantsSound = !!cfg.sound;
     v.muted = !wantsSound;
     v.volume = wantsSound ? (cfg.volume ?? 1) : 0;
@@ -194,7 +167,6 @@
     if (cfg.poster) v.setAttribute("poster", cfg.poster);
 
     // autoplay intent
-    // (we still gate actual playing by visibility below)
     const wantsAutoplay = cfg.autoplay !== false;
 
     // click toggle
@@ -202,7 +174,6 @@
       wrap.style.cursor = "pointer";
       wrap.addEventListener("click", async () => {
         if (v.paused) {
-          // if sound=true, unmute on user gesture
           if (wantsSound) v.muted = false;
           await safePlay(v);
         } else {
@@ -214,7 +185,7 @@
     // hover behavior
     if (cfg.hoverPlay) {
       wrap.addEventListener("mouseenter", async () => {
-        if (wantsSound) v.muted = false; // gesture-ish, but hover may still be blocked
+        if (wantsSound) v.muted = false;
         await safePlay(v);
       });
       wrap.addEventListener("mouseleave", () => v.pause());
@@ -233,7 +204,6 @@
           v.pause();
         } else {
           if (wantsAutoplay && !cfg.hoverPlay) {
-            // if sound=true and autoplay=true, this may be blocked: safePlay handles it
             safePlay(v);
           }
         }
@@ -242,12 +212,7 @@
       requestAnimationFrame(tick);
     }
 
-    // start
-    // (don’t force play on load if autoplay is off)
-    if (wantsAutoplay && !cfg.hoverPlay) {
-      // If sound=false, autoplay will usually succeed; if sound=true, likely blocked until click.
-      safePlay(v);
-    }
+    if (wantsAutoplay && !cfg.hoverPlay) safePlay(v);
     requestAnimationFrame(tick);
   });
 
