@@ -149,7 +149,7 @@ verdreht sich lustig
 habe ich dich zu dünn gemacht? 
 verdreht sich wieder zurück 
 die zunge schleift übers laminat
-da ist sie doch, die straße, die ich suchte die ganze nacht
+da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
   
   `.trim()
     }
