@@ -137,7 +137,8 @@ ef-ellf-li joqe
 ELLF
 febeow wefij-ei
 {{img:https://static.wixstatic.com/media/0f3578_30116604300247679ef56e512632a158~mv2.jpg/v1/fill/w_400,h_300,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_30116604300247679ef56e512632a158~mv2.jpg}}
- }
+  `.trim()
+    }
   ];
 
   // -------------------------------------------------------
