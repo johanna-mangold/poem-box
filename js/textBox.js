@@ -127,8 +127,8 @@ You can always teleport back to the starting point by clicking on the white dot 
 
       const inner = document.createElement("div");
       inner.className = "map-textbox-inner";
-      inner.textContent = cfg.text || "";
-
+ inner.innerHTML = cfg.text || "";
+       
       box.appendChild(label);
       box.appendChild(inner);
       mapEl.appendChild(box);
