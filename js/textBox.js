@@ -139,7 +139,8 @@ ei ieo owhigr
 ef-ellf-li joqe
 ELLF
 febeow wefij-ei
-{{img:https://static.wixstatic.com/media/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg/v1/fill/w_600,h_871,al_c,q_85,enc_avif,quality_auto/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg}}
+
+{{https://static.wixstatic.com/media/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg/v1/fill/w_832,h_1200,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg}}
 eine strategie brauchen sie
 einen farbcode
 eine eigene sprache
@@ -152,7 +153,7 @@ verdreht sich wieder zurück
 die zunge schleift übers laminat
 da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
 
-{{img:https://static.wixstatic.com/media/0f3578_9d87ba09aaa249d88484af05e2212065~mv2.jpg/v1/fill/w_480,h_696,al_c,lg_1,q_80,enc_avif,quality_auto/0f3578_9d87ba09aaa249d88484af05e2212065~mv2.jpg}}
+{{https://static.wixstatic.com/media/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg/v1/fill/w_600,h_871,al_c,q_85,enc_avif,quality_auto/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg}}
   
   `.trim()
     }
