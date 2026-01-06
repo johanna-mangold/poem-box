@@ -138,7 +138,7 @@ ei ieo owhigr
 ef-ellf-li joqe
 ELLF
 febeow wefij-ei
-{{https://static.wixstatic.com/media/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg/v1/fill/w_832,h_1200,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg}}
+{{img:https://static.wixstatic.com/media/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg/v1/fill/w_832,h_1200,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg}}
 eine strategie brauchen sie
 einen farbcode
 eine eigene sprache
