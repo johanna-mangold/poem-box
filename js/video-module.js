@@ -19,7 +19,7 @@
       y: 330,
 
       // ✅ choose ONE (recommended)
-      width: 360,   // sets width, height auto by video aspect
+      width: 320,   // sets width, height auto by video aspect
       // height: 180,
 
       src: "assets/videos/WYRD_VR1.mp4",
