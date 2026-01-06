@@ -22,7 +22,7 @@
       h: 180,
 
       // Put your file/url here (mp4 recommended)
-      src: "assets/videos/clip1.mp4",
+      src: "assets/videos/frozen_klein.mp4",
 
       // Playback
       loop: true,
