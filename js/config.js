@@ -57,10 +57,10 @@
         id: "t1",
         x: -300,
         y: 300, 
-        text: "hello map this is a very long sentence, can you please put it in one long line over the screen", 
+        text: "she digs into the finest fluff\nwith gentle claws between fringes she plucks", 
         fontSize: 13,
         color: "#fefcf7",
-        maxWidth: 620,
+        maxWidth: null,
         rotate: 0
       }
       // Example:
