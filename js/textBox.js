@@ -211,11 +211,24 @@ da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
       mapEl.appendChild(box);
 
       // --- interaction fixes ---
+      // Stop wheel from leaking out AND block browser pinch/cmd/ctrl zoom while in textbox
       inner.addEventListener(
         "wheel",
-        (e) => e.stopPropagation(),
-        { capture: true, passive: true }
+        (e) => {
+          if (e.ctrlKey || e.metaKey) e.preventDefault(); // prevents browser zoom gesture (trackpad pinch / cmd+wheel)
+          e.stopPropagation();
+        },
+        { capture: true, passive: false }
       );
+
+      // Safari pinch gesture events (extra safety)
+      ["gesturestart", "gesturechange", "gestureend"].forEach(type => {
+        inner.addEventListener(
+          type,
+          (e) => { e.preventDefault(); e.stopPropagation(); },
+          { passive: false }
+        );
+      });
 
       inner.addEventListener(
         "pointerdown",
