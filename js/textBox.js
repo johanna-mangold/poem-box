@@ -25,8 +25,6 @@ You can also use two-finger scrolling on a trackpad.
 
 Many elements react to hover or clicks.
 
-{{img:https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png}}
-
 Tablet / Touch devices
 ----------------------
 
@@ -71,8 +69,6 @@ reading 2025
 [[david pablo - joanna yulia kluge]] 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
-
-{{img:https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png}}
 
 #### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
