@@ -797,63 +797,85 @@ into this open womb
       const preCache = new Map(); // src -> Image()
 
       function preload(src){
-        if (!src || preCache.has(src)) return;
-        const i = new Image();
-        // wichtig: KEIN cache-busting beim preload, sonst killt man caching
-        i.src = src;
-        preCache.set(src, i);
+  if (!src || preCache.has(src)) return;
+  const i = new Image();
+  try { i.fetchPriority = "low"; } catch(e){}
+  i.src = src;
+  preCache.set(src, i);
 
-        // klein halten, nicht unendlich wachsen
-        if (preCache.size > 24){
-          const firstKey = preCache.keys().next().value;
-          preCache.delete(firstKey);
-        }
-      }
+  if (preCache.size > 24){
+    const firstKey = preCache.keys().next().value;
+    preCache.delete(firstKey);
+  }
+}
+
 
       function setCounter(){
         cnt.textContent =
           `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
       }
 
-      function render(){
-        const baseSrc = PAGES[index];
-        let attempt = 0;
+     function render(){
+  const baseSrc = PAGES[index];
+  let attempt = 0;
 
-        setCounter();
+  setCounter();
 
-        // preload neighbors (macht blättern wieder schnell)
-        preload(PAGES[(index + 1) % PAGES.length]);
-        preload(PAGES[(index - 1 + PAGES.length) % PAGES.length]);
+  // preload neighbors (macht blättern wieder schnell)
+  preload(PAGES[(index + 1) % PAGES.length]);
+  preload(PAGES[(index - 1 + PAGES.length) % PAGES.length]);
 
-        const tryLoad = () => {
-          const src =
-            attempt === 0
-              ? baseSrc
-              : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
+  // request token verhindert Race Conditions bei schnellem Klicken
+  const reqId = (root._zineReqId = (root._zineReqId || 0) + 1);
 
-          img.onload = () => {
-            img.style.opacity = "0.999";
-            requestAnimationFrame(() => { img.style.opacity = "1"; });
-            img.onload = null;
-            img.onerror = null;
-          };
+  const tryLoad = () => {
+    const src =
+      attempt === 0
+        ? baseSrc
+        : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
 
-          img.onerror = () => {
-            attempt++;
-            if (attempt <= 3){
-              setTimeout(tryLoad, 250 + attempt * 250);
-            } else {
-              console.warn("Zine image failed after retries:", baseSrc);
-              img.onload = null;
-              img.onerror = null;
-            }
-          };
+    // IMPORTANT: erst in offscreen Image laden, dann ins sichtbare <img> swappen
+    const loader = new Image();
+    loader.decoding = "async";
 
-          img.src = src;
-        };
+    // optional: hilft manchmal beim "wichtigen" aktuellen Bild
+    // (wird nicht überall unterstützt, schadet aber nicht)
+    try { img.fetchPriority = "high"; } catch(e){}
 
-        tryLoad();
+    loader.onload = () => {
+      if (root._zineReqId !== reqId) return; // veraltet (user hat schon weitergeklickt)
+
+      // Safari-sticky vermeiden: src einmal "leeren"
+      img.removeAttribute("src");
+
+      // swap in next frame
+      requestAnimationFrame(() => {
+        if (root._zineReqId !== reqId) return;
+        img.src = loader.src;
+
+        // kleiner "repaint kick" für Safari/Chrome
+        img.style.opacity = "0.999";
+        requestAnimationFrame(() => { img.style.opacity = "1"; });
+      });
+    };
+
+    loader.onerror = () => {
+      if (root._zineReqId !== reqId) return;
+
+      attempt++;
+      if (attempt <= 3){
+        setTimeout(tryLoad, 250 + attempt * 250);
+      } else {
+        console.warn("Zine image failed after retries:", baseSrc);
       }
+    };
+
+    loader.src = src;
+  };
+
+  tryLoad();
+}
+
 
       function go(delta){
         index = (index + delta + PAGES.length) % PAGES.length;
@@ -979,9 +1001,8 @@ into this open womb
   })();
   </script>
 
-  <!-- Impressum -->
-  <a
-    <a
+<!-- Impressum -->
+<a
   href="https://www.johanna-mangold.de/impressum"
   target="_blank"
   rel="noopener"
