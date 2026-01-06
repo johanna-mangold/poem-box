@@ -15,11 +15,11 @@
   const MAP_VIDEOS = [
     {
       id: "vid1",
-      x: -600,
-      y: 200,
+      x: 1600,
+      y: 330,
 
       // ✅ choose ONE (recommended)
-      width: 320,   // sets width, height auto by video aspect
+      width: 360,   // sets width, height auto by video aspect
       // height: 180,
 
       src: "assets/videos/WYRD_VR1.mp4",
