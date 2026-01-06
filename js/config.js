@@ -55,8 +55,8 @@
     MAP_TEXTS: [
       {
         id: "t1",
-        x: 40,
-        y: 20, 
+        x: -300,
+        y: 300, 
         text: "hello map", 
         fontSize: 13,
         color: "rgba(78,24,247,1)",
