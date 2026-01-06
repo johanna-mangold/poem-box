@@ -99,7 +99,26 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[künstliche intelligenz und empathie - catrin misselhorn]]
 [[das seltsame und das gespenstische - mark fisher]]
      `.trim()
-      }
+      },
+     {
+      id: "text3",
+      x: 400,
+      y: -1741,
+      w: 490,
+      h: 620,
+      text: `
+      <p>this is a test. 
+      i will insert an image here.</p> 
+      <img
+  src="https://static.wixstatic.com/media/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg/v1/fill/w_1800,h_1883,al_c,q_90,enc_avif,quality_auto/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg"
+    max-width:100%;
+    height:auto;
+    display:block;
+    margin:16px auto;
+  "
+>
+ <p>can you see the image?</p> 
+ }
   ];
 
   function createTextBoxes(mapEl) {
