@@ -82,6 +82,141 @@
   applyTransform();
 
   /* =========================================================
+     NEW: init MapTexts (plain text) even if scripts load late
+     ========================================================= */
+
+  function ensureTextsLayer(){
+    let layer = document.getElementById("mapTextLayer");
+    if (layer) return layer;
+
+    layer = document.createElement("div");
+    layer.id = "mapTextLayer";
+    world.appendChild(layer);
+
+    Object.assign(layer.style, {
+      position: "absolute",
+      left: "0px",
+      top: "0px",
+      width: "0px",
+      height: "0px",
+      zIndex: "30",
+      pointerEvents: "none"
+    });
+
+    return layer;
+  }
+
+  function applyTextStyle(el, t, defaults){
+    const fontFamily = t.fontFamily ?? defaults.fontFamily ?? '"Roboto Mono", monospace';
+    const fontSize = (t.fontSize ?? defaults.fontSize ?? 16);
+    const color = t.color ?? defaults.color ?? "rgba(254,252,247,.85)";
+    const lineHeight = (t.lineHeight ?? defaults.lineHeight ?? 1.25);
+    const letterSpacing = t.letterSpacing ?? defaults.letterSpacing ?? "0px";
+    const textTransform = t.textTransform ?? defaults.textTransform ?? "none";
+    const opacity = (t.opacity ?? defaults.opacity ?? 1);
+    const maxWidth = (t.maxWidth ?? defaults.maxWidth ?? null);
+    const align = (t.align ?? defaults.align ?? "left");
+    const zIndex = (t.zIndex ?? defaults.zIndex ?? 30);
+    const rotate = (t.rotate ?? defaults.rotate ?? 0);
+    const textShadow = (t.textShadow ?? defaults.textShadow ?? "none");
+    const pointerEvents = (t.pointerEvents ?? defaults.pointerEvents ?? "none");
+
+    Object.assign(el.style, {
+      position: "absolute",
+      left: (Number(t.x) || 0) + "px",
+      top: (Number(t.y) || 0) + "px",
+      transform: rotate ? `rotate(${rotate}deg)` : "none",
+      transformOrigin: "0 0",
+      fontFamily,
+      fontSize: fontSize + "px",
+      lineHeight: String(lineHeight),
+      letterSpacing,
+      textTransform,
+      color,
+      opacity: String(opacity),
+      whiteSpace: "pre-wrap",
+      textAlign: align,
+      pointerEvents,
+      zIndex: String(zIndex),
+      textShadow
+    });
+
+    if (maxWidth != null && maxWidth !== "" && !Number.isNaN(Number(maxWidth))){
+      el.style.maxWidth = Number(maxWidth) + "px";
+    } else {
+      el.style.maxWidth = "";
+    }
+  }
+
+  function createOrUpdateMapTexts(){
+    const cfg = window.KMAP?.config || {};
+    const items = cfg.MAP_TEXTS || [];
+    const defaults = cfg.MAP_TEXTS_STYLE || {};
+
+    const layer = ensureTextsLayer();
+
+    // index existing
+    const existing = new Map();
+    layer.querySelectorAll("[data-maptext]").forEach(el => {
+      existing.set(el.getAttribute("data-maptext"), el);
+    });
+
+    const seen = new Set();
+
+    for (const t of items){
+      if (!t) continue;
+      const id = String(t.id ?? "");
+      if (!id) continue;
+      seen.add(id);
+
+      let el = existing.get(id);
+      if (!el){
+        el = document.createElement("div");
+        el.setAttribute("data-maptext", id);
+        layer.appendChild(el);
+      }
+
+      el.textContent = String(t.text ?? "");
+      applyTextStyle(el, t, defaults);
+    }
+
+    // remove old
+    for (const [id, el] of existing.entries()){
+      if (!seen.has(id)) el.remove();
+    }
+  }
+
+  // expose so you can hot-reload / call from console if you want
+  KMAP.refreshMapTexts = () => {
+    try { createOrUpdateMapTexts(); } catch(e){}
+  };
+
+  function initMapTextsWhenReady(){
+    let done = false;
+
+    function tryInit(){
+      if (done) return true;
+      // config can arrive slightly later on Wix
+      const cfg = window.KMAP?.config;
+      if (!cfg) return false;
+
+      try { createOrUpdateMapTexts(); } catch(e){}
+      done = true;
+      return true;
+    }
+
+    if (tryInit()) return;
+
+    const t0 = performance.now();
+    const timer = setInterval(() => {
+      if (tryInit() || (performance.now() - t0) > 5000) clearInterval(timer);
+    }, 50);
+  }
+  initMapTextsWhenReady();
+
+  /* ======================= END NEW ======================= */
+
+  /* =========================================================
      NEW: init TextBoxes even if textBox.js loads AFTER map-core
      ========================================================= */
   function initTextBoxesWhenReady(){
