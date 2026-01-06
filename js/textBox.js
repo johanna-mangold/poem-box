@@ -103,7 +103,45 @@ reading 2025
 [[künstliche intelligenz und empathie - catrin misselhorn]]
 [[das seltsame und das gespenstische - mark fisher]]
       `.trim()
-    }
+    }, 
+     {
+      id: "text3",
+      x: 599,
+      y: -1741,
+      w: 490,
+      h: 620,
+      text: `
+      they do not work like this.  
+they must be reconfigured.
+
+turned over,  
+thrown down to the floor,  
+out the window.
+
+modular.  
+co-co-coo.
+
+they refuse to plush correctly,  
+refuse to grow into streets,  
+into rails,  
+into connection.
+
+a strike.
+
+they want to be different.  
+their own.
+
+to cloak themselves,  
+to hide the paths,  
+to show no roads at all
+
+suuuur reuu
+ei ieo owhigr
+ef-ellf-li joqe
+ELLF
+febeow wefij-ei
+{{img:https://static.wixstatic.com/media/0f3578_30116604300247679ef56e512632a158~mv2.jpg/v1/fill/w_400,h_300,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_30116604300247679ef56e512632a158~mv2.jpg}}
+ }
   ];
 
   // -------------------------------------------------------
