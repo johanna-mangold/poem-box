@@ -153,7 +153,7 @@ verdreht sich wieder zurück
 die zunge schleift übers laminat
 da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
 
-{{img:https://static.wixstatic.com/media/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg/v1/fill/w_600,h_871,al_c,q_85,enc_avif,quality_auto/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg}}
+{{img:https://static.wixstatic.com/media/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg/v1/fill/w_100,h_150,al_c,q_85,enc_avif,quality_auto/0f3578_fc038fe80fb4470886b863768aaa5627~mv2.jpg}}
   
   `.trim()
     }
