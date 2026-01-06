@@ -12,7 +12,7 @@
       x: 0,
       y: 33,
       w: 420,
-      h: 220,
+      h: 120,
       text: `
 *How to navigate this map*
 
@@ -102,11 +102,13 @@ reading 2025
     }, 
      {
       id: "text3",
-      x: 599,
-      y: -1741,
+      x: 2800,
+      y: 0,
       w: 290,
-      h: 320,
+      h: 620,
       text: `
+      januar26
+      **
       they do not work like this.  
 they must be reconfigured.
 
