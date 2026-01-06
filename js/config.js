@@ -11,13 +11,13 @@
       { id:"l4", pts: [ [250,692], [2308,692] ] },
       { id:"l5", pts: [ [-2,136], [-1151,136] ] },
       { id:"l6", pts: [ [-804,130], [-804,1633] ] },
-      { id:"l7", pts: [ [530,1438], [530,1995] ] },
+      { id:"l7", pts: [ [530,1438], [530,1995] ] },
       { id:"l8", pts: [ [-490,1800], [64,1800], [64,2125], [387,2125] ] },
       { id:"l9", pts: [ [1459,-580], [1459,-1276] ] },
       { id:"l10", pts: [ [-1635,343], [-1635,1466] ] },
-      { id:"l11", pts: [ [80,-700], [80,-2184], [190,-2184] ] },
+      { id:"l11", pts: [ [80,-700], [80,-2184], [190,-2184] ] },
       { id:"l12", pts: [ [2200,-2700], [2200,-1000] ] },
-      { id:"l13", pts: [ [-1700,138], [-2465,138], [-2465,1000] ] },
+      { id:"l13", pts: [ [-1700,138], [-2465,138], [-2465,1000] ] },
       { id:"l14", pts: [ [1458,116], [2777,116] ] },
      // { id:"l4", pts: [ [11,127], [11,-1171] ] }
     ],
@@ -31,6 +31,41 @@
       dashScaleWithZoom: false,
       debug: false
     },
+
+    /* =========================================================
+       NEW: MAP TEXTS (plain text on the map, no boxes)
+       ========================================================= */
+    MAP_TEXTS_STYLE: {
+      fontFamily: '"Roboto Mono", monospace',
+      fontSize: 16,                 // px
+      color: "rgba(254,252,247,.85)",
+      lineHeight: 1.25,             // multiplier
+      letterSpacing: "0px",
+      textTransform: "none",        // none | uppercase | lowercase
+      opacity: 1,
+      maxWidth: null,               // number (px) or null
+      align: "left",                // left | center | right
+      zIndex: 30,
+      rotate: 0,                    // deg
+      pointerEvents: "none",        // keep map draggable
+      // optional glow like your neon vibe:
+      textShadow: "0 0 10px rgba(254,252,247,.12)"
+    },
+
+    MAP_TEXTS: [
+      // Example:
+      // {
+      //   id: "t1",
+      //   x: 40,
+      //   y: 20,
+      //   text: "hello map",
+      //   fontSize: 18,
+      //   color: "rgba(78,25,247,.85)",
+      //   maxWidth: 320,
+      //   rotate: -2
+      // }
+    ],
+    /* ======================= END NEW ======================= */
 
     // IMAGES
     MAP_IMAGES: [
