@@ -19,7 +19,7 @@
       y: 200,
 
       // ✅ choose ONE (recommended)
-      width: 220,   // sets width, height auto by video aspect
+      width: 320,   // sets width, height auto by video aspect
       // height: 180,
 
       src: "assets/videos/frozen_ganzklein.mp4",
