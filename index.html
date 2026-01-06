@@ -848,10 +848,6 @@ into this open womb
         const controller = new AbortController();
         root._zineAbort = controller;
 
-        // loading state
-        root.dataset.loading = "1";
-        img.style.opacity = "0.55";
-
         const fetchBlob = async (url) => {
           // 1) force-cache
           try {
@@ -867,6 +863,8 @@ into this open womb
         };
 
         const tryLoad = async () => {
+          const prevSrc = img.src; // keep current visible (prevents flicker)
+
           for (let attempt = 0; attempt < 4; attempt++){
             if (root._zineReqId !== reqId) return;
 
@@ -880,11 +878,12 @@ into this open womb
             }, 9000);
 
             try {
+              let nextUrl = null;
+
               // use preloaded objectURL if available
               const cached = preCache.get(baseSrc);
               if (attempt === 0 && cached?.url){
-                img.removeAttribute("src");
-                img.src = cached.url;
+                nextUrl = cached.url;
               } else {
                 const blob = await fetchBlob(src);
                 const url = URL.createObjectURL(blob);
@@ -893,22 +892,23 @@ into this open womb
                   try { URL.revokeObjectURL(root._zineObjectURL); } catch(e){}
                 }
                 root._zineObjectURL = url;
-
-                img.removeAttribute("src");
-                img.src = url;
+                nextUrl = url;
               }
 
-              if (img.decode) {
-                await img.decode();
+              // decode OFFSCREEN first -> swap only when ready (no flicker)
+              const loader = new Image();
+              loader.src = nextUrl;
+
+              if (loader.decode) {
+                await loader.decode();
               } else {
                 await new Promise(r => requestAnimationFrame(r));
               }
 
               if (root._zineReqId !== reqId) return;
 
-              // success
-              root.dataset.loading = "0";
-              img.style.opacity = "1";
+              // only now swap visible image
+              img.src = loader.src;
 
               // preload AFTER success: only 1 neighbor
               preload(PAGES[(index + 1) % PAGES.length]);
@@ -918,17 +918,21 @@ into this open womb
             } catch (err) {
               clearTimeout(t);
               if (controller.signal.aborted) return;
+
+              // keep previous visible
+              if (prevSrc) img.src = prevSrc;
+
               await new Promise(r => setTimeout(r, 300 + attempt * 450));
             }
           }
 
-          // final fail: tap-to-retry
+          // final fail: tap-to-retry (still keeps previous visible if it existed)
           if (root._zineReqId !== reqId) return;
 
-          root.dataset.loading = "0";
-          img.style.opacity = "1";
-          img.removeAttribute("src");
-          img.alt = "failed to load — tap to retry";
+          if (!prevSrc) {
+            img.removeAttribute("src");
+            img.alt = "failed to load — tap to retry";
+          }
 
           const retry = (e) => {
             e.preventDefault();
