@@ -111,7 +111,7 @@ You can always teleport back to the starting point by clicking on the white dot 
     i will insert an image here.</p>
 
     <img
-      src="https://static.wixstatic.com/media/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg/v1/fill/w_1800,h_1883,al_c,q_90,enc_avif,quality_auto/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg"
+      src="https://static.wixstatic.com/media/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg/v1/fill/w_200,h_200,al_c,q_90,enc_avif,quality_auto/0f3578_d633f8d69049493a9358f3debd90b05e~mv2.jpg"
       style="
         max-width:100%;
         height:auto;
