@@ -654,7 +654,7 @@
 </head>
 
 <body>
-  <div id="buildBadge" aria-label="build id"></div>
+   // <div id="buildBadge" aria-label="build id"></div>
 
   <div id="viewport">
     <div id="world">
@@ -1052,22 +1052,6 @@ into this open womb
       counterId:"zineCounter_3",
       pages: ZINE_PAGES_3
     });
-  })();
-  </script>
-
-  <script>
-  (() => {
-    const BUILD_ID = "001";
-    const el = document.getElementById("buildBadge");
-    if (!el) return;
-
-    const loadedAt = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-
-    el.innerHTML = `<b>build</b> ${BUILD_ID}<span class="muted">loaded ${loadedAt}</span>`;
   })();
   </script>
 
