@@ -10,7 +10,7 @@
       x: 0,
       y: 33,
       w: 420,
-      h: 120,
+      h: 220, // ggf. höher, damit Bild + Text reinpasst
       text: `
 *How to navigate this map*
 
@@ -23,6 +23,7 @@ You can also use two-finger scrolling on a trackpad.
 
 Many elements react to hover or clicks.
 
+{{img:https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png}}
 
 Tablet / Touch devices
 ----------------------
@@ -30,7 +31,6 @@ Tablet / Touch devices
 Drag with one finger anywhere on the map to move.
 
 Swipe inside a text box to scroll its content.
-
 
 General notes
 -------------
@@ -103,13 +103,33 @@ You can always teleport back to the starting point by clicking on the white dot 
       }
   ];
 
+  function renderTextWithImages(rawText) {
+    const safe = (rawText ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    // Replace {{img:...}} with an <img> tag
+    return safe.replace(
+      /\{\{img:([^}]+)\}\}/g,
+      (_, url) => {
+        const u = String(url).trim().replace(/"/g, "&quot;");
+        return `
+          <img
+            src="${u}"
+            style="max-width:100%; height:auto; display:block; margin:16px auto;"
+            draggable="false"
+          >
+        `;
+      }
+    ).replace(/\n/g, "<br>");
+  }
+
   function createTextBoxes(mapEl) {
     if (!mapEl) return;
 
     TEXT_BOXES.forEach(cfg => {
       if (!cfg) return;
-
-      // avoid duplicates
       if (cfg.id && document.getElementById(cfg.id)) return;
 
       const box = document.createElement("div");
@@ -121,53 +141,43 @@ You can always teleport back to the starting point by clicking on the white dot 
       box.style.width  = (cfg.w ?? 360) + "px";
       box.style.height = (cfg.h ?? 240) + "px";
 
-      // --- scroll label (top right, above box)
       const label = document.createElement("div");
       label.className = "map-textbox-label";
       label.textContent = "scroll";
 
       const inner = document.createElement("div");
       inner.className = "map-textbox-inner";
-      inner.textContent = cfg.text || "";
+
+      // ✅ Keep formatting "as-is" (plain text look), but allow images
+      inner.innerHTML = renderTextWithImages(cfg.text || "");
 
       box.appendChild(label);
       box.appendChild(inner);
       mapEl.appendChild(box);
 
-      // =========================
-      // Interaction fixes
-      // =========================
-
       // ✅ Let scroll work: stop wheel BEFORE it reaches #viewport
       inner.addEventListener(
         "wheel",
-        (e) => {
-          e.stopPropagation();
-        },
+        (e) => { e.stopPropagation(); },
         { capture: true, passive: true }
       );
 
       // ✅ Touch scroll inside box shouldn't start map drag
       inner.addEventListener(
         "pointerdown",
-        (e) => {
-          if (e.pointerType === "touch") e.stopPropagation();
-        },
+        (e) => { if (e.pointerType === "touch") e.stopPropagation(); },
         { passive: true }
       );
 
       // Optional: mouse text selection without map drag
       inner.addEventListener(
         "pointerdown",
-        (e) => {
-          if (e.pointerType === "mouse") e.stopPropagation();
-        },
+        (e) => { if (e.pointerType === "mouse") e.stopPropagation(); },
         { passive: true }
       );
     });
   }
 
-  // Auto-init
   function init() {
     const world = window.KMAP?.world || document.getElementById("world");
     if (!world) return;
@@ -182,3 +192,4 @@ You can always teleport back to the starting point by clicking on the white dot 
 
   window.createTextBoxes = createTextBoxes;
 })();
+
