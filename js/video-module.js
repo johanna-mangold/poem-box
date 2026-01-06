@@ -22,7 +22,7 @@
       width: 320,   // sets width, height auto by video aspect
       // height: 180,
 
-      src: "assets/videos/frozen_ganzklein.mp4",
+      src: "assets/videos/insta_WYRD_1.mp4",
 
       loop: true,
       autoplay: true,
