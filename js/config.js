@@ -53,6 +53,16 @@
     },
 
     MAP_TEXTS: [
+      {
+        id: "t1",
+        x: 40,
+        y: 20, 
+        text: "hello map", 
+        fontSize: 13,
+        color: "rgba(78,24,247,1)",
+        maxWidth: 620,
+        rotate: 0
+      }
       // Example:
       // {
       //   id: "t1",
