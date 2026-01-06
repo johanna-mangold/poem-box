@@ -138,7 +138,19 @@ ei ieo owhigr
 ef-ellf-li joqe
 ELLF
 febeow wefij-ei
-{{img:https://static.wixstatic.com/media/0f3578_30116604300247679ef56e512632a158~mv2.jpg/v1/fill/w_400,h_300,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_30116604300247679ef56e512632a158~mv2.jpg}}
+{{https://static.wixstatic.com/media/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg/v1/fill/w_832,h_1200,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_6a800eacceb7449886928d7048fa3a21~mv2.jpg}}
+eine strategie brauchen sie
+einen farbcode
+eine eigene sprache
+es rollt über den wohnzimmerboden
+immer mal wieder bleibt es kurz stehen, sieht mich fragend an. 
+mit glubsch 
+verdreht sich lustig
+habe ich dich zu dünn gemacht? 
+verdreht sich wieder zurück 
+die zunge schleift übers laminat
+da ist sie doch, die straße, die ich suchte die ganze nacht
+  
   `.trim()
     }
   ];
