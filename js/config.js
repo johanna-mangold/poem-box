@@ -57,9 +57,9 @@
         id: "t1",
         x: -300,
         y: 300, 
-        text: "hello map", 
+        text: "hello map this is a very long sentence, can you please put it in one long line over the screen", 
         fontSize: 13,
-        color: "rgba(78,24,247,1)",
+        color: "#FFFFFF",
         maxWidth: 620,
         rotate: 0
       }
