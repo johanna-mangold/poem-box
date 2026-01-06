@@ -9,6 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
+<!-- ✅ Preconnect for Wix (zines) -->
+<link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
+<link rel="preconnect" href="https://static.parastorage.com" crossorigin>
+<link rel="dns-prefetch" href="https://static.wixstatic.com">
+<link rel="dns-prefetch" href="https://static.parastorage.com">
+
 <!-- p5.js -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
 
@@ -794,88 +800,148 @@ into this open womb
       let index = 0;
 
       // keep refs so we can avoid reloading same neighbor repeatedly
-      const preCache = new Map(); // src -> Image()
+      const preCache = new Map(); // src -> { url, t }
 
       function preload(src){
-  if (!src || preCache.has(src)) return;
-  const i = new Image();
-  try { i.fetchPriority = "low"; } catch(e){}
-  i.src = src;
-  preCache.set(src, i);
+        if (!src || preCache.has(src)) return;
 
-  if (preCache.size > 24){
-    const firstKey = preCache.keys().next().value;
-    preCache.delete(firstKey);
-  }
-}
+        // klein halten
+        if (preCache.size > 8){
+          const firstKey = preCache.keys().next().value;
+          const rec = preCache.get(firstKey);
+          if (rec?.url) URL.revokeObjectURL(rec.url);
+          preCache.delete(firstKey);
+        }
 
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort("preload-timeout"), 6000);
+
+        fetch(src, { cache: "force-cache", signal: controller.signal })
+          .then(r => {
+            if (!r.ok) throw new Error("preload-http-" + r.status);
+            return r.blob();
+          })
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            preCache.set(src, { url, t: Date.now() });
+          })
+          .catch(()=>{})
+          .finally(()=> clearTimeout(timeout));
+      }
 
       function setCounter(){
         cnt.textContent =
           `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
       }
 
-     function render(){
-  const baseSrc = PAGES[index];
-  let attempt = 0;
+      function render(){
+        const baseSrc = PAGES[index];
+        setCounter();
 
-  setCounter();
+        // request token verhindert Race Conditions
+        const reqId = (root._zineReqId = (root._zineReqId || 0) + 1);
 
-  // preload neighbors (macht blättern wieder schnell)
-  preload(PAGES[(index + 1) % PAGES.length]);
-  preload(PAGES[(index - 1 + PAGES.length) % PAGES.length]);
+        // cancel previous in-flight
+        if (root._zineAbort) {
+          try { root._zineAbort.abort("new-request"); } catch(e){}
+        }
+        const controller = new AbortController();
+        root._zineAbort = controller;
 
-  // request token verhindert Race Conditions bei schnellem Klicken
-  const reqId = (root._zineReqId = (root._zineReqId || 0) + 1);
+        // loading state
+        root.dataset.loading = "1";
+        img.style.opacity = "0.55";
 
-  const tryLoad = () => {
-    const src =
-      attempt === 0
-        ? baseSrc
-        : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
+        const fetchBlob = async (url) => {
+          // 1) force-cache
+          try {
+            const r1 = await fetch(url, { cache: "force-cache", signal: controller.signal });
+            if (r1.ok) return await r1.blob();
+            throw new Error("http-" + r1.status);
+          } catch (e) {
+            // 2) reload
+            const r2 = await fetch(url, { cache: "reload", signal: controller.signal });
+            if (!r2.ok) throw new Error("http-" + r2.status);
+            return await r2.blob();
+          }
+        };
 
-    // IMPORTANT: erst in offscreen Image laden, dann ins sichtbare <img> swappen
-    const loader = new Image();
-    loader.decoding = "async";
+        const tryLoad = async () => {
+          for (let attempt = 0; attempt < 4; attempt++){
+            if (root._zineReqId !== reqId) return;
 
-    // optional: hilft manchmal beim "wichtigen" aktuellen Bild
-    // (wird nicht überall unterstützt, schadet aber nicht)
-    try { img.fetchPriority = "high"; } catch(e){}
+            const src =
+              attempt === 0
+                ? baseSrc
+                : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
 
-    loader.onload = () => {
-      if (root._zineReqId !== reqId) return; // veraltet (user hat schon weitergeklickt)
+            const t = setTimeout(() => {
+              try { controller.abort("timeout"); } catch(e){}
+            }, 9000);
 
-      // Safari-sticky vermeiden: src einmal "leeren"
-      img.removeAttribute("src");
+            try {
+              // use preloaded objectURL if available
+              const cached = preCache.get(baseSrc);
+              if (attempt === 0 && cached?.url){
+                img.removeAttribute("src");
+                img.src = cached.url;
+              } else {
+                const blob = await fetchBlob(src);
+                const url = URL.createObjectURL(blob);
 
-      // swap in next frame
-      requestAnimationFrame(() => {
-        if (root._zineReqId !== reqId) return;
-        img.src = loader.src;
+                if (root._zineObjectURL){
+                  try { URL.revokeObjectURL(root._zineObjectURL); } catch(e){}
+                }
+                root._zineObjectURL = url;
 
-        // kleiner "repaint kick" für Safari/Chrome
-        img.style.opacity = "0.999";
-        requestAnimationFrame(() => { img.style.opacity = "1"; });
-      });
-    };
+                img.removeAttribute("src");
+                img.src = url;
+              }
 
-    loader.onerror = () => {
-      if (root._zineReqId !== reqId) return;
+              if (img.decode) {
+                await img.decode();
+              } else {
+                await new Promise(r => requestAnimationFrame(r));
+              }
 
-      attempt++;
-      if (attempt <= 3){
-        setTimeout(tryLoad, 250 + attempt * 250);
-      } else {
-        console.warn("Zine image failed after retries:", baseSrc);
+              if (root._zineReqId !== reqId) return;
+
+              // success
+              root.dataset.loading = "0";
+              img.style.opacity = "1";
+
+              // preload AFTER success: only 1 neighbor
+              preload(PAGES[(index + 1) % PAGES.length]);
+
+              clearTimeout(t);
+              return;
+            } catch (err) {
+              clearTimeout(t);
+              if (controller.signal.aborted) return;
+              await new Promise(r => setTimeout(r, 300 + attempt * 450));
+            }
+          }
+
+          // final fail: tap-to-retry
+          if (root._zineReqId !== reqId) return;
+
+          root.dataset.loading = "0";
+          img.style.opacity = "1";
+          img.removeAttribute("src");
+          img.alt = "failed to load — tap to retry";
+
+          const retry = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            img.removeEventListener("click", retry);
+            render();
+          };
+          img.addEventListener("click", retry, { once: true });
+          console.warn("Zine failed to load:", baseSrc);
+        };
+
+        tryLoad();
       }
-    };
-
-    loader.src = src;
-  };
-
-  tryLoad();
-}
-
 
       function go(delta){
         index = (index + delta + PAGES.length) % PAGES.length;
@@ -1024,8 +1090,5 @@ into this open womb
   Impressum
 </a>
 
-  >
-    Impressum
-  </a>
 </body>
 </html>
