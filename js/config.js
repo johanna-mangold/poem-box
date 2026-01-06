@@ -97,7 +97,7 @@
       
       {
         src:"https://static.wixstatic.com/media/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png/v1/fill/w_672,h_490,al_c,lg_1,q_85,enc_avif,quality_auto/0f3578_ffb6ed42fb3a43fcb4984c3b54ece3cf~mv2.png",
-        x: -870, y: -670, w: 300, rot: 0, op: 1,
+        x: -434, y: -132, w: 300, rot: 0, op: 1,
         jumpOnHover: true,
         jumpRange: 300,
         jumpCooldownMs: 250,
