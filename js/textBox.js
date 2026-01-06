@@ -1,16 +1,18 @@
 /* =========================================================
    TEXT BOX MODULE
    no titlebar · neon colors via CSS · scrollable
+   supports {{img:URL}} placeholders
    ========================================================= */
 
 (() => {
+
   const TEXT_BOXES = [
     {
       id: "text1",
       x: 0,
       y: 33,
       w: 420,
-      h: 220, // ggf. höher, damit Bild + Text reinpasst
+      h: 220,
       text: `
 *How to navigate this map*
 
@@ -43,15 +45,15 @@ You can always teleport back to the starting point by clicking on the white dot 
       `.trim()
     },
 
-     {
+    {
       id: "text2",
       x: 199,
       y: -2741,
       w: 490,
       h: 620,
       text: `
-        reading 2025
-     #### fiction
+reading 2025
+#### fiction
 [[the heart is deceitful above all things - jt leroy]]
 [[no one belongs here more than you - miranda july]]
 [[plastic abyss - kate wilhelm]]
@@ -69,9 +71,10 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[david pablo - joanna yulia kluge]] 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
+
 {{img:https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90,enc_avif,quality_auto/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png}}
 
-      #### short stories
+#### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
 [[my evil mother - margaret atwood]]
 [[bereue, harlekin! sagte der ticktackmann - h. ellison]]
@@ -91,7 +94,7 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[the infinity box - kate wilhelm]] 
 [[the time piece - kate wilhelm]] 
 
-      #### non-fiction
+#### non-fiction
 [[hexen - die unbesiegte macht der frauen - mona chollet]]
 [[kulturelle aneignung - lars distelhorst]]
 [[six ways - aidan wachter]]
@@ -99,32 +102,34 @@ You can always teleport back to the starting point by clicking on the white dot 
 [[künstliche intelligenz u. der neue faschismus - rainer mühlhoff]]
 [[künstliche intelligenz und empathie - catrin misselhorn]]
 [[das seltsame und das gespenstische - mark fisher]]
-     `.trim()
-      }
+      `.trim()
+    }
   ];
 
+  // -------------------------------------------------------
+  // render plain text + allow {{img:URL}}
+  // -------------------------------------------------------
   function renderTextWithImages(rawText) {
-    const safe = (rawText ?? "")
+    let safe = (rawText ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
-    // Replace {{img:...}} with an <img> tag
-    return safe.replace(
-      /\{\{img:([^}]+)\}\}/g,
-      (_, url) => {
-        const u = String(url).trim().replace(/"/g, "&quot;");
-        return `
-          <img
-            src="${u}"
-            style="max-width:100%; height:auto; display:block; margin:16px auto;"
-            draggable="false"
-          >
-        `;
-      }
-    ).replace(/\n/g, "<br>");
+    // keep original line breaks
+    safe = safe.replace(/\n/g, "<br>");
+
+    // inject images
+    safe = safe.replace(/\{\{img:([^}]+)\}\}/g, (_, url) => {
+      const u = String(url).trim().replace(/"/g, "&quot;");
+      return `<img src="${u}" style="max-width:100%;height:auto;display:block;margin:16px auto;" draggable="false">`;
+    });
+
+    return safe;
   }
 
+  // -------------------------------------------------------
+  // create boxes
+  // -------------------------------------------------------
   function createTextBoxes(mapEl) {
     if (!mapEl) return;
 
@@ -147,29 +152,25 @@ You can always teleport back to the starting point by clicking on the white dot 
 
       const inner = document.createElement("div");
       inner.className = "map-textbox-inner";
-
-      // ✅ Keep formatting "as-is" (plain text look), but allow images
       inner.innerHTML = renderTextWithImages(cfg.text || "");
 
       box.appendChild(label);
       box.appendChild(inner);
       mapEl.appendChild(box);
 
-      // ✅ Let scroll work: stop wheel BEFORE it reaches #viewport
+      // --- interaction fixes ---
       inner.addEventListener(
         "wheel",
-        (e) => { e.stopPropagation(); },
+        (e) => e.stopPropagation(),
         { capture: true, passive: true }
       );
 
-      // ✅ Touch scroll inside box shouldn't start map drag
       inner.addEventListener(
         "pointerdown",
         (e) => { if (e.pointerType === "touch") e.stopPropagation(); },
         { passive: true }
       );
 
-      // Optional: mouse text selection without map drag
       inner.addEventListener(
         "pointerdown",
         (e) => { if (e.pointerType === "mouse") e.stopPropagation(); },
@@ -178,18 +179,24 @@ You can always teleport back to the starting point by clicking on the white dot 
     });
   }
 
-  function init() {
+  // -------------------------------------------------------
+  // init (safe for delayed KMAP/world)
+  // -------------------------------------------------------
+  function initWhenReady() {
     const world = window.KMAP?.world || document.getElementById("world");
-    if (!world) return;
+    if (!world) return false;
     createTextBoxes(world);
+    return true;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
+  if (!initWhenReady()) {
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (initWhenReady() || tries > 80) clearInterval(t);
+    }, 100);
   }
 
   window.createTextBoxes = createTextBoxes;
-})();
 
+})();
