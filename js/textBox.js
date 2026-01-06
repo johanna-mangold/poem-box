@@ -104,8 +104,8 @@ reading 2025
       id: "text3",
       x: 599,
       y: -1741,
-      w: 490,
-      h: 620,
+      w: 290,
+      h: 320,
       text: `
       they do not work like this.  
 they must be reconfigured.
