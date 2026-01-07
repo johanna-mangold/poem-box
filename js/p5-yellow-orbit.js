@@ -85,9 +85,9 @@
     const DOT_SIZE = 5;
 
     // ===== COLORS =====
-    const YELLOW = "#2A00F5";   // fill of the big circle
+    const YELLOW = "#FFF";   // fill of the big circle
     const STROKE = "#9628F5";   // outline of the big circle
-    const DOT_COLOR = "#F031CF"; // ✅ dots color (edit here)
+    const DOT_COLOR = "#2A0000"; // ✅ dots color (edit here)
 
     // If you want a solid BG instead of transparent:
     // const BG_COLOR = "#F000AD";
