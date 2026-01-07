@@ -63,9 +63,9 @@
         maxWidth: null,
         rotate: 0,
         goto: {
-        x: 2388,
+        x: 1900,
         y: -744,
-        zoom: 1
+        zoom: 0
     },
 
     hoverColor: "#ffffff",
