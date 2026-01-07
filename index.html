@@ -26,6 +26,7 @@
     --cell: 48px;
     --major: calc(var(--cell) * 5);
     --vh: 1vh;
+
   }
 
   /* =========================================================
@@ -595,6 +596,18 @@
     opacity:.35;
     pointer-events:none;
   }
+
+  /* =========================================================
+     DISABLE TEXT / ELEMENT SELECTION (iOS SAFARI FIX)
+     ========================================================= */
+  html, body, #world, #viewport, *{
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important; /* disables long-press menu */
+  }
+  *::selection{ background: transparent; }
+  *::-moz-selection{ background: transparent; }
+
 </style>
 
 <!-- ✅ JS files -->
@@ -614,7 +627,6 @@
 <script defer src="./js/sketch.js"></script>
 <script defer src="./js/video-module.js"></script>
 
-
 <!-- ✅ config for the independent auto poem -->
 <script>
   window.POEM_SYS_CONFIG = {
@@ -623,6 +635,16 @@
   };
 </script>
 <script defer src="./js/poem-system.js"></script>
+
+<!-- ✅ iOS Safari: force-clear any existing selection on load -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.getSelection) {
+      const sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    }
+  });
+</script>
 
 </head>
 
