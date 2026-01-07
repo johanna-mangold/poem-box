@@ -104,6 +104,15 @@
         jumpMinMove: 200
       }, // blubiiird
 
+     {
+        src:"https://static.wixstatic.com/media/0f3578_fd1e418ae03b4f43ba6b6b226ec4b528~mv2.png/v1/fill/w_724,h_554,al_c,q_90,enc_avif,quality_auto/0f3578_fd1e418ae03b4f43ba6b6b226ec4b528~mv2.png",
+        x: -834, y: 232, w: 300, rot: 0, op: 1,
+        jumpOnHover: true,
+        jumpRange: 300,
+        jumpCooldownMs: 250,
+        jumpMinMove: 200
+      }, // waterviech
+
       {
         src:"https://static.wixstatic.com/media/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png/v1/fill/w_626,h_472,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_28aec9253a414b8a9808464358975ce4~mv2.png",
         x: -1200, y: 3000, w: 300, rot: 0, op: 1,
