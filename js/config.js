@@ -63,8 +63,8 @@
         maxWidth: null,
         rotate: 0,
         goto: {
-        x: 2288,
-        y: 744,
+        x: 2388,
+        y: -744,
         zoom: 1
     },
 
