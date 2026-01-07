@@ -147,7 +147,7 @@
       el.style.maxWidth = "";
     }
 
-    /* ===================== NEW: clickable goto ===================== */
+    /* ===================== clickable goto ===================== */
     // reset interactivity every time (so refresh doesn't stack handlers)
     el.style.cursor = "";
     el.onclick = null;
@@ -169,7 +169,22 @@
         try { e.preventDefault(); e.stopPropagation(); } catch(e){}
         const g = t.goto;
         if (!g) return;
-        KMAP.goTo(g.x, g.y, g.zoom ?? null);
+
+        // ===== FIX: goto coords are WORLD coords, but goTo expects TRANSFORM coords =====
+        const vw = (window.visualViewport?.width ?? window.innerWidth);
+        const vh = (window.visualViewport?.height ?? window.innerHeight);
+        const cx = Math.round(vw * 0.5);
+        const cy = Math.round(vh * 0.5);
+
+        const gx = Number(g.x) || 0;
+        const gy = Number(g.y) || 0;
+
+        // Put world point (gx,gy) into the center of the screen:
+        const tx = cx - gx;
+        const ty = cy - gy;
+
+        KMAP.goTo(tx, ty, g.zoom ?? null);
+        // =====================================================================
       };
 
       if (t.hoverColor) {
@@ -177,7 +192,7 @@
         el.onmouseleave = () => { el.style.color = color; };
       }
     }
-    /* =================== END NEW: clickable goto =================== */
+    /* =================== end clickable goto =================== */
   }
 
   function createOrUpdateMapTexts(){
