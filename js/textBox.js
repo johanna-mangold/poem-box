@@ -151,6 +151,27 @@ habe ich dich zu dünn gemacht?
 verdreht sich wieder zurück 
 die zunge schleift übers laminat
 da ist sie doch, die straße, die ich gesucht hab, die ganze nacht 6/1
+** - **
+
+flirrend liegt er auf dem teppich und räkelt sich. 
+sie kommt dazu mit schüsseln voller getrockneter pilze,
+stellt sie vor uns hin, erwartungsvoll. 
+auch feigen sind dabei. 
+am klavier spielen wir vierhändig.
+unter seiner würde ist das. 
+unter seiner würde bin auch ich, denke ich, denkt er. 
+ich bin weniger,
+zu dünn gemacht.
+meine plateauschuhe habe ich verloren
+auf dem weg hierher. 
+sie geht wieder zu den katzen, 
+die sich erst noch eingewöhnen müssen. 
+er steht über mir
+versucht etwas
+aber scheitert. 
+macht sich lächerlich. 
+7/1
+**
   
   `.trim()
     }
