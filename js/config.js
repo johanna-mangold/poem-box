@@ -70,8 +70,6 @@
 
     hoverColor: "#ffffff",
     cursor: "pointer"
-  }
-]
       }
     ],
     /* ======================= END NEW ======================= */
