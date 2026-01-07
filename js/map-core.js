@@ -146,6 +146,38 @@
     } else {
       el.style.maxWidth = "";
     }
+
+    /* ===================== NEW: clickable goto ===================== */
+    // reset interactivity every time (so refresh doesn't stack handlers)
+    el.style.cursor = "";
+    el.onclick = null;
+    el.onmouseenter = null;
+    el.onmouseleave = null;
+    el.onpointerdown = null;
+
+    if (t.goto) {
+      // allow interaction for this one text item
+      el.style.pointerEvents = "auto";
+      el.style.cursor = t.cursor ?? "pointer";
+
+      // prevent map-drag from starting when pressing on the text
+      el.onpointerdown = (e) => {
+        try { e.stopPropagation(); } catch(e){}
+      };
+
+      el.onclick = (e) => {
+        try { e.preventDefault(); e.stopPropagation(); } catch(e){}
+        const g = t.goto;
+        if (!g) return;
+        KMAP.goTo(g.x, g.y, g.zoom ?? null);
+      };
+
+      if (t.hoverColor) {
+        el.onmouseenter = () => { el.style.color = t.hoverColor; };
+        el.onmouseleave = () => { el.style.color = color; };
+      }
+    }
+    /* =================== END NEW: clickable goto =================== */
   }
 
   function createOrUpdateMapTexts(){
