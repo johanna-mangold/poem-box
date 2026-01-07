@@ -61,19 +61,18 @@
         fontSize: 13,
         color: "#fefcf7",
         maxWidth: null,
-        rotate: 0
+        rotate: 0,
+        goto: {
+        x: -1200,
+        y: 900,
+        zoom: 1
+    },
+
+    hoverColor: "#ffffff",
+    cursor: "pointer"
+  }
+]
       }
-      // Example:
-      // {
-      //   id: "t1",
-      //   x: 40,
-      //   y: 20,
-      //   text: "hello map",
-      //   fontSize: 18,
-      //   color: "rgba(78,25,247,.85)",
-      //   maxWidth: 320,
-      //   rotate: -2
-      // }
     ],
     /* ======================= END NEW ======================= */
 
