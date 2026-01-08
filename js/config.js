@@ -79,7 +79,7 @@
         goto: {
         x: 400,
         y: 3000,
-        zoom: 0
+  
     },
         
     hoverColor: "#ffffff",
