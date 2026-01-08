@@ -95,7 +95,7 @@
       {
         src:"https://static.wixstatic.com/media/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png/v1/fill/w_799,h_985,al_c,q_90,enc_avif,quality_auto/0f3578_16e80d61816447c88decdfff57a41cb8~mv2.png",
         x: 3000, y: 1500, w: 300, rot: 0, op: 1,
-        goto: { x: -700, y: -900, zoom: 1 }
+        goto: { x: -2300, y: 1200, zoom: 1 }
       }, // red blob
 
       {
