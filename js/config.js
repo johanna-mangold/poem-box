@@ -67,7 +67,21 @@
         y: -744,
         zoom: 0
     },
-
+        {
+        id: "t2",
+        x: -464,
+        y: 930,
+        text: "JANUAR",
+            fontSize: 13,
+        color: "#fefcf7",
+        maxWidth: null,
+        rotate: 0,
+        goto: {
+        x: 400,
+        y: 3000,
+        zoom: 0
+    },
+        
     hoverColor: "#ffffff",
     cursor: "pointer"
       }
