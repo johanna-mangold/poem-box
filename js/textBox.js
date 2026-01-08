@@ -172,7 +172,21 @@ aber scheitert.
 macht sich lächerlich. 
 7/1
 **
-  
+
+und er 
+das monster
+ist erledigt
+denken wir.
+feiernd stolpern wir stufen hinab
+
+doch im fünften stock
+steht er dann doch wieder auf
+elastischer als je zuvor
+mit schnellen beinen
+und schraubenkrone
+keucht er uns hinterher
+wie grün er riecht
+8/1
   `.trim()
     }
   ];
