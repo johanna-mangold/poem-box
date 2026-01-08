@@ -56,18 +56,22 @@
       {
         id: "t1",
         x: -474,
-        y: 928, 
-        text: "she digs into the finest fluff\nwith gentle claws\nbetween fringes she plucks", 
+        y: 928,
+        text: "she digs into the finest fluff\nwith gentle claws\nbetween fringes she plucks",
         fontSize: 13,
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
-        goto: 
-        x: 2400,
-        y: -744,
-        zoom: 0
-    },
-        {
+        goto: {
+          x: 2400,
+          y: -744,
+          zoom: 0
+        },
+        hoverColor: "#ffffff",
+        cursor: "pointer"
+      },
+
+      {
         id: "t2",
         x: -564,
         y: 930,
@@ -76,14 +80,12 @@
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
-        goto: 
-        x: 400,
-        y: 3000,
-  
-    },
-        
-    hoverColor: "#ffffff",
-    cursor: "pointer"
+        goto: {
+          x: 400,
+          y: 3000
+        },
+        hoverColor: "#ffffff",
+        cursor: "pointer"
       }
     ],
     /* ======================= END NEW ======================= */
@@ -115,7 +117,7 @@
         jumpMinMove: 200
       }, // blubiiird
 
-     {
+      {
         src:"https://static.wixstatic.com/media/0f3578_fd1e418ae03b4f43ba6b6b226ec4b528~mv2.png/v1/fill/w_724,h_554,al_c,q_90,enc_avif,quality_auto/0f3578_fd1e418ae03b4f43ba6b6b226ec4b528~mv2.png",
         x: 3200, y: 900, w: 270, rot: 0, op: 1,
         jumpOnHover: true,
