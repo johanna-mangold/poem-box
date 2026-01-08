@@ -69,10 +69,10 @@
     },
         {
         id: "t2",
-        x: -464,
+        x: -564,
         y: 930,
         text: "JANUAR",
-            fontSize: 13,
+        fontSize: 13,
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
