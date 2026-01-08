@@ -767,288 +767,250 @@ into this open womb
   <!-- ===========================
        ZINE LOGIC (retries + neighbor preload for ALL zines)
        =========================== -->
-  <script>
-  (() => {
-    function initOneZine(opts){
-      const KMAP = window.KMAP;
-      const root = document.getElementById(opts.rootId);
-      const img  = document.getElementById(opts.imgId);
-      const prev = document.getElementById(opts.prevId);
-      const next = document.getElementById(opts.nextId);
-      const cnt  = document.getElementById(opts.counterId);
+ <script>
+(() => {
+  function initOneZine(opts){
+    const KMAP = window.KMAP;
+    const root = document.getElementById(opts.rootId);
+    const imgA = document.getElementById(opts.imgId);
+    const prev = document.getElementById(opts.prevId);
+    const next = document.getElementById(opts.nextId);
+    const cnt  = document.getElementById(opts.counterId);
 
-      if (!KMAP || !root || !img || !prev || !next || !cnt){
-        requestAnimationFrame(() => initOneZine(opts));
-        return;
-      }
-
-      // iOS/Safari: hilft manchmal beim ersten Render
-      img.loading = "eager";
-      img.decoding = "sync";
-
-      const PAGES = opts.pages || [];
-      if (!PAGES.length){
-        console.warn("Zine has no pages:", opts.rootId);
-        return;
-      }
-
-      let index = 0;
-
-      // keep refs so we can avoid reloading same neighbor repeatedly
-      const preCache = new Map(); // src -> { url, t }
-
-      function preload(src){
-        if (!src || preCache.has(src)) return;
-
-        // klein halten
-        if (preCache.size > 8){
-          const firstKey = preCache.keys().next().value;
-          const rec = preCache.get(firstKey);
-          if (rec?.url) URL.revokeObjectURL(rec.url);
-          preCache.delete(firstKey);
-        }
-
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort("preload-timeout"), 6000);
-
-        fetch(src, { cache: "force-cache", signal: controller.signal })
-          .then(r => {
-            if (!r.ok) throw new Error("preload-http-" + r.status);
-            return r.blob();
-          })
-          .then(blob => {
-            const url = URL.createObjectURL(blob);
-            preCache.set(src, { url, t: Date.now() });
-          })
-          .catch(()=>{})
-          .finally(()=> clearTimeout(timeout));
-      }
-
-      function setCounter(){
-        cnt.textContent =
-          `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
-      }
-
-      function render(){
-        const baseSrc = PAGES[index];
-        setCounter();
-
-        // request token verhindert Race Conditions
-        const reqId = (root._zineReqId = (root._zineReqId || 0) + 1);
-
-        // cancel previous in-flight
-        if (root._zineAbort) {
-          try { root._zineAbort.abort("new-request"); } catch(e){}
-        }
-        const controller = new AbortController();
-        root._zineAbort = controller;
-
-        const fetchBlob = async (url) => {
-          // 1) force-cache
-          try {
-            const r1 = await fetch(url, { cache: "force-cache", signal: controller.signal });
-            if (r1.ok) return await r1.blob();
-            throw new Error("http-" + r1.status);
-          } catch (e) {
-            // 2) reload
-            const r2 = await fetch(url, { cache: "reload", signal: controller.signal });
-            if (!r2.ok) throw new Error("http-" + r2.status);
-            return await r2.blob();
-          }
-        };
-
-        const tryLoad = async () => {
-          const prevSrc = img.src; // keep current visible (prevents flicker)
-
-          for (let attempt = 0; attempt < 4; attempt++){
-            if (root._zineReqId !== reqId) return;
-
-            const src =
-              attempt === 0
-                ? baseSrc
-                : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
-
-            const t = setTimeout(() => {
-              try { controller.abort("timeout"); } catch(e){}
-            }, 9000);
-
-            try {
-              let nextUrl = null;
-
-              // use preloaded objectURL if available
-              const cached = preCache.get(baseSrc);
-              if (attempt === 0 && cached?.url){
-                nextUrl = cached.url;
-              } else {
-                const blob = await fetchBlob(src);
-                const url = URL.createObjectURL(blob);
-
-                if (root._zineObjectURL){
-                  try { URL.revokeObjectURL(root._zineObjectURL); } catch(e){}
-                }
-                root._zineObjectURL = url;
-                nextUrl = url;
-              }
-
-              // decode OFFSCREEN first -> swap only when ready (no flicker)
-              const loader = new Image();
-              loader.src = nextUrl;
-
-              if (loader.decode) {
-                await loader.decode();
-              } else {
-                await new Promise(r => requestAnimationFrame(r));
-              }
-
-              if (root._zineReqId !== reqId) return;
-
-              // only now swap visible image
-              img.src = loader.src;
-
-              // preload AFTER success: only 1 neighbor
-              preload(PAGES[(index + 1) % PAGES.length]);
-
-              clearTimeout(t);
-              return;
-            } catch (err) {
-              clearTimeout(t);
-              if (controller.signal.aborted) return;
-
-              // keep previous visible
-              if (prevSrc) img.src = prevSrc;
-
-              await new Promise(r => setTimeout(r, 300 + attempt * 450));
-            }
-          }
-
-          // final fail: tap-to-retry (still keeps previous visible if it existed)
-          if (root._zineReqId !== reqId) return;
-
-          if (!prevSrc) {
-            img.removeAttribute("src");
-            img.alt = "failed to load — tap to retry";
-          }
-
-          const retry = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            img.removeEventListener("click", retry);
-            render();
-          };
-          img.addEventListener("click", retry, { once: true });
-          console.warn("Zine failed to load:", baseSrc);
-        };
-
-        tryLoad();
-      }
-
-      function go(delta){
-        index = (index + delta + PAGES.length) % PAGES.length;
-        render();
-      }
-
-      // clicks on zine shouldn’t start map drag
-      KMAP.registerPOIHitTest(t => t && (t === root || root.contains(t)));
-
-      prev.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); });
-      next.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); });
-
-      prev.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); }, {passive:false});
-      next.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); }, {passive:false});
-
-      requestAnimationFrame(render);
+    if (!KMAP || !root || !imgA || !prev || !next || !cnt){
+      requestAnimationFrame(() => initOneZine(opts));
+      return;
     }
 
-    const ZINE_PAGES_1 = [
-      "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_9c27916905c849ae864725138867bf35~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9c27916905c849ae864725138867bf35~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_777354008ad942c090462e0c848e74db~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_777354008ad942c090462e0c848e74db~mv2.png"
-    ];
+    const PAGES = opts.pages || [];
+    if (!PAGES.length){
+      console.warn("Zine has no pages:", opts.rootId);
+      return;
+    }
 
-    const ZINE_PAGES_2 = [
-      "https://static.wixstatic.com/media/0f3578_dd4be280948147399176eae6287858f5~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_dd4be280948147399176eae6287858f5~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_a324bb2fa79644fe8d0d1c4952b918b9~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_a324bb2fa79644fe8d0d1c4952b918b9~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_b00f05d35c6e436185909bf76fef9444~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b00f05d35c6e436185909bf76fef9444~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_31b16cef3a8a4f9a9ff6a8b515d0fd0d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_31b16cef3a8a4f9a9ff6a8b515d0fd0d~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_dba30b75ae264ebcba61b1236b3201e1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_dba30b75ae264ebcba61b1236b3201e1~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_e8d6b438be62470d88b8f2ad8d5e6a05~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e8d6b438be62470d88b8f2ad8d5e6a05~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_baaabcb401c24b7a9138106f88ba0ff4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_baaabcb401c24b7a9138106f88ba0ff4~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_11d5d1dace0a49d7b72ce0e2767544ee~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_11d5d1dace0a49d7b72ce0e2767544ee~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_ca137f0339b543379ee8821dfec16b63~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ca137f0339b543379ee8821dfec16b63~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_a085de84c9264abca3c1bcd8116860b3~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_a085de84c9264abca3c1bcd8116860b3~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_22e68823fa4c48b987399fc0cd4f3676~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_22e68823fa4c48b987399fc0cd4f3676~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_e6a88e9b952f49c098278476a0134d67~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e6a88e9b952f49c098278476a0134d67~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_adcb448e288a4055a52594e7835bcbd4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_adcb448e288a4055a52594e7835bcbd4~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_88f9c6a3f237466a97c12b578cb10d6c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_88f9c6a3f237466a97c12b578cb10d6c~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png"
-    ];
+    // ===== Double-buffer: second image stacked on top =====
+    const imgB = imgA.cloneNode(false);
+    imgB.removeAttribute("id");
+    imgB.alt = imgA.alt || "zine spread";
+    root.insertBefore(imgB, imgA.nextSibling);
 
-    const ZINE_PAGES_3 = [
-      "https://static.wixstatic.com/media/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_b582a486313e4738a3964f92e894864c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b582a486313e4738a3964f92e894864c~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_52da534516e74d7e9ae63ef9476cdea4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_52da534516e74d7e9ae63ef9476cdea4~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_c9e7dbfd64f74dbb8f71b686bf2ae6dd~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_c9e7dbfd64f74dbb8f71b686bf2ae6dd~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_f78cd19656904734aa78d674cee05aa4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_f78cd19656904734aa78d674cee05aa4~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_9a3004695b3d4369a3dce2c5532489a0~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9a3004695b3d4369a3dce2c5532489a0~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_01d21e1ecfdf43fd94f6050dee6afab3~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_01d21e1ecfdf43fd94f6050dee6afab3~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_1ef48ab1d6ab4cbc8599a987849a2ae5~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1ef48ab1d6ab4cbc8599a987849a2ae5~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_219bf846968f43989f0e6191606ba2c1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_219bf846968f43989f0e6191606ba2c1~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_378fb660962d4d5781455bac75254b04~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_378fb660962d4d5781455bac75254b04~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_06e4fcb6370f49a8bc83e5d680b30488~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_06e4fcb6370f49a8bc83e5d680b30488~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_1006186f5e8641b0b0a25d8aa94a58ea~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1006186f5e8641b0b0a25d8aa94a58ea~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_1ea22e556000400298c2f4b4e20e2fb7~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1ea22e556000400298c2f4b4e20e2fb7~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_5bcd59efeb1a4d2ca5fdfabe74a867d6~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_5bcd59efeb1a4d2ca5fdfabe74a867d6~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_10d75a6cd9a24495b1b60fbf40ee8933~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_10d75a6cd9a24495b1b60fbf40ee8933~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_0575a13b4f0c4fcb808c8a11aa87d8a2~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_0575a13b4f0c4fcb808c8a11aa87d8a2~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_e27926e7d6a547a3bdd5115e832587b8~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e27926e7d6a547a3bdd5115e832587b8~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_4490424e5ec143ada97b187dc5a6c9e1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_4490424e5ec143ada97b187dc5a6c9e1~mv2.png",
-      "https://static.wixstatic.com/media/0f3578_899006978be149d4a4dcba940ecbb782~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_899006978be149d4a4dcba940ecbb782~mv2.png"
-    ];
+    // identical styling + smooth swap
+    for (const im of [imgA, imgB]){
+      im.loading = "eager";
+      im.decoding = "async";
+      im.style.transition = "opacity 120ms linear";
+      im.style.willChange = "opacity";
+      im.style.opacity = "0";
+    }
+    imgA.style.opacity = "1";
 
-    initOneZine({
-      rootId:"zinePOI", imgId:"zineImg",
-      prevId:"zinePrev", nextId:"zineNext",
-      counterId:"zineCounter",
-      pages: ZINE_PAGES_1
-    });
+    let front = imgA;
+    let back  = imgB;
 
-    initOneZine({
-      rootId:"zinePOI_2", imgId:"zineImg_2",
-      prevId:"zinePrev_2", nextId:"zineNext_2",
-      counterId:"zineCounter_2",
-      pages: ZINE_PAGES_2
-    });
+    let index = 0;
+    let reqId = 0;
 
-    initOneZine({
-      rootId:"zinePOI_3", imgId:"zineImg_3",
-      prevId:"zinePrev_3", nextId:"zineNext_3",
-      counterId:"zineCounter_3",
-      pages: ZINE_PAGES_3
-    });
-  })();
-  </script>
+    // light-weight neighbor preload (browser cache)
+    const preCache = new Map(); // src -> Image()
+    function preload(src){
+      if (!src || preCache.has(src)) return;
+      const i = new Image();
+      i.decoding = "async";
+      i.src = src;
+      preCache.set(src, i);
+      if (preCache.size > 12){
+        const firstKey = preCache.keys().next().value;
+        preCache.delete(firstKey);
+      }
+    }
+
+    function setCounter(){
+      cnt.textContent =
+        `${String(index+1).padStart(2,"0")}/${String(PAGES.length).padStart(2,"0")}`;
+    }
+
+    function swapTo(url){
+      // swap without ever blanking the visible image
+      back.style.opacity = "0";
+      back.src = url;
+
+      // wait a frame so browser "registers" src before fade
+      requestAnimationFrame(() => {
+        back.style.opacity = "1";
+        front.style.opacity = "0";
+
+        // after transition: swap refs
+        setTimeout(() => {
+          const tmp = front;
+          front = back;
+          back = tmp;
+
+          // keep back ready but not visible
+          back.style.opacity = "0";
+        }, 160);
+      });
+    }
+
+    function render(){
+      const baseSrc = PAGES[index];
+      setCounter();
+
+      // preload neighbors
+      preload(PAGES[(index + 1) % PAGES.length]);
+      preload(PAGES[(index - 1 + PAGES.length) % PAGES.length]);
+
+      const myReq = ++reqId;
+      let attempt = 0;
+
+      const tryLoad = () => {
+        if (myReq !== reqId) return;
+
+        const src =
+          attempt === 0
+            ? baseSrc
+            : `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}cb=${Date.now()}_${attempt}`;
+
+        // load offscreen first
+        const loader = new Image();
+        loader.decoding = "async";
+
+        loader.onload = () => {
+          if (myReq !== reqId) return;
+          swapTo(loader.src);
+        };
+
+        loader.onerror = () => {
+          if (myReq !== reqId) return;
+          attempt++;
+          if (attempt <= 4){
+            setTimeout(tryLoad, 250 + attempt * 350);
+          } else {
+            // keep current page visible; add click-to-retry on front img
+            console.warn("Zine failed to load:", baseSrc);
+            const retry = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              front.removeEventListener("click", retry);
+              render();
+            };
+            front.addEventListener("click", retry, { once:true });
+          }
+        };
+
+        loader.src = src;
+      };
+
+      tryLoad();
+    }
+
+    function go(delta){
+      index = (index + delta + PAGES.length) % PAGES.length;
+      render();
+    }
+
+    // clicks on zine shouldn’t start map drag
+    KMAP.registerPOIHitTest(t => t && (t === root || root.contains(t)));
+
+    prev.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); });
+    next.addEventListener("click", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); });
+
+    prev.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(-1); }, {passive:false});
+    next.addEventListener("touchend", (e)=>{ e.preventDefault(); e.stopPropagation(); go(+1); }, {passive:false});
+
+    requestAnimationFrame(render);
+  }
+
+  const ZINE_PAGES_1 = [
+    "https://static.wixstatic.com/media/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_7594f428f43a4da38ae95f098d832def~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_44015f570b5e4a469f3e8cc4898f5f17~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_6a28264aed6d4e3ba524d529f647c66b~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_662976b93ec94a76bdcd68f616030720~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_776a5368f3854f08a8d1ab6eaea7220d~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png/v1/fill/w_980,h_639,al_c,q_85,usm_0.66_1.00_0.01/0f3578_a6766c1a06134117b49b64422533c32f~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_39deed12c9434e348cc0a6bb8d5c852f~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_c2e8e3a2a3fe4146abe96a8d58c460cf~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_f3e41c55437246fba0c685e4f1dacfd1~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_5bcb95642bbd4d1ea1bb1b934b07b2c7~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_d7fecbc8bc8f4af599194c8855440e5f~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ac809ccfaecc42a0b20eb9ef710e5ae1~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b99eafeff4744cf18fa0f625281f1f88~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1eab171a845c40b9ba47635ab6e6a96c~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_559fddddad5f4a8ba7e813f70be09a00~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_60ef94e364b84ba3830ace73e224143b~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_be4a91ec424b40bd9168df39852a13c4~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_9c27916905c849ae864725138867bf35~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9c27916905c849ae864725138867bf35~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_777354008ad942c090462e0c848e74db~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_777354008ad942c090462e0c848e74db~mv2.png"
+  ];
+
+  const ZINE_PAGES_2 = [
+    "https://static.wixstatic.com/media/0f3578_dd4be280948147399176eae6287858f5~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_dd4be280948147399176eae6287858f5~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_0e4bd2e56f26444e84b10c0fd8da40fd~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9b41a8a332e048f4b131475ed35f9150~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_602a30cb14784b6b907868c9306b4a2d~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_a324bb2fa79644fe8d0d1c4952b918b9~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_a324bb2fa79644fe8d0d1c4952b918b9~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_b00f05d35c6e436185909bf76fef9444~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b00f05d35c6e436185909bf76fef9444~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_31b16cef3a8a4f9a9ff6a8b515d0fd0d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_31b16cef3a8a4f9a9ff6a8b515d0fd0d~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_dba30b75ae264ebcba61b1236b3201e1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_dba30b75ae264ebcba61b1236b3201e1~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_e8d6b438be62470d88b8f2ad8d5e6a05~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e8d6b438be62470d88b8f2ad8d5e6a05~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_baaabcb401c24b7a9138106f88ba0ff4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_baaabcb401c24b7a9138106f88ba0ff4~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_11d5d1dace0a49d7b72ce0e2767544ee~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_11d5d1dace0a49d7b72ce0e2767544ee~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_ca137f0339b543379ee8821dfec16b63~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ca137f0339b543379ee8821dfec16b63~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_a085de84c9264abca3c1bcd8116860b3~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_a085de84c9264abca3c1bcd8116860b3~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_22e68823fa4c48b987399fc0cd4f3676~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_22e68823fa4c48b987399fc0cd4f3676~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_e6a88e9b952f49c098278476a0134d67~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e6a88e9b952f49c098278476a0134d67~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_adcb448e288a4055a52594e7835bcbd4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_adcb448e288a4055a52594e7835bcbd4~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_88f9c6a3f237466a97c12b578cb10d6c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_88f9c6a3f237466a97c12b578cb10d6c~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_6ce2a87c50644f3c90d8098241ffab66~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_ae79be0b56f34ca285b1835a70d005de~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_07a7606fb2214c26aeddedf76171aa53~mv2.png"
+  ];
+
+  const ZINE_PAGES_3 = [
+    "https://static.wixstatic.com/media/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_fa494a6a6ba64a7bbd20bd95ed0c8c1d~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_b582a486313e4738a3964f92e894864c~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_b582a486313e4738a3964f92e894864c~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_52da534516e74d7e9ae63ef9476cdea4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_52da534516e74d7e9ae63ef9476cdea4~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_c9e7dbfd64f74dbb8f71b686bf2ae6dd~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_c9e7dbfd64f74dbb8f71b686bf2ae6dd~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_f78cd19656904734aa78d674cee05aa4~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_f78cd19656904734aa78d674cee05aa4~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_9a3004695b3d4369a3dce2c5532489a0~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_9a3004695b3d4369a3dce2c5532489a0~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_01d21e1ecfdf43fd94f6050dee6afab3~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_01d21e1ecfdf43fd94f6050dee6afab3~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_1ef48ab1d6ab4cbc8599a987849a2ae5~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1ef48ab1d6ab4cbc8599a987849a2ae5~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_219bf846968f43989f0e6191606ba2c1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_219bf846968f43989f0e6191606ba2c1~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_378fb660962d4d5781455bac75254b04~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_378fb660962d4d5781455bac75254b04~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_06e4fcb6370f49a8bc83e5d680b30488~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_06e4fcb6370f49a8bc83e5d680b30488~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_1006186f5e8641b0b0a25d8aa94a58ea~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1006186f5e8641b0b0a25d8aa94a58ea~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_1ea22e556000400298c2f4b4e20e2fb7~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_1ea22e556000400298c2f4b4e20e2fb7~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_5bcd59efeb1a4d2ca5fdfabe74a867d6~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_5bcd59efeb1a4d2ca5fdfabe74a867d6~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_10d75a6cd9a24495b1b60fbf40ee8933~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_10d75a6cd9a24495b1b60fbf40ee8933~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_0575a13b4f0c4fcb808c8a11aa87d8a2~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_0575a13b4f0c4fcb808c8a11aa87d8a2~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_66d14a2c05b04185936787430ca1db01~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_e27926e7d6a547a3bdd5115e832587b8~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_e27926e7d6a547a3bdd5115e832587b8~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_4490424e5ec143ada97b187dc5a6c9e1~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_4490424e5ec143ada97b187dc5a6c9e1~mv2.png",
+    "https://static.wixstatic.com/media/0f3578_899006978be149d4a4dcba940ecbb782~mv2.png/v1/fill/w_980,h_639,al_c,q_90/0f3578_899006978be149d4a4dcba940ecbb782~mv2.png"
+  ];
+
+  initOneZine({
+    rootId:"zinePOI", imgId:"zineImg",
+    prevId:"zinePrev", nextId:"zineNext",
+    counterId:"zineCounter",
+    pages: ZINE_PAGES_1
+  });
+
+  initOneZine({
+    rootId:"zinePOI_2", imgId:"zineImg_2",
+    prevId:"zinePrev_2", nextId:"zineNext_2",
+    counterId:"zineCounter_2",
+    pages: ZINE_PAGES_2
+  });
+
+  initOneZine({
+    rootId:"zinePOI_3", imgId:"zineImg_3",
+    prevId:"zinePrev_3", nextId:"zineNext_3",
+    counterId:"zineCounter_3",
+    pages: ZINE_PAGES_3
+  });
+})();
+</script>
+
 
 <!-- Impressum -->
 <a
