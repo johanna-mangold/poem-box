@@ -73,16 +73,16 @@
 
       {
         id: "t2",
-        x: -564,
-        y: 930,
-        text: "JANUAR",
+        x: -410,
+        y: -1200,
+        text: "JA - Tanu - R",
         fontSize: 13,
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
         goto: {
-          x: 400,
-          y: 3000
+          x: 2680,
+          y: 280
         },
         hoverColor: "#ffffff",
         cursor: "pointer"
