@@ -62,7 +62,7 @@
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
-        goto: {
+        goto: 
         x: 2400,
         y: -744,
         zoom: 0
@@ -76,7 +76,7 @@
         color: "#fefcf7",
         maxWidth: null,
         rotate: 0,
-        goto: {
+        goto: 
         x: 400,
         y: 3000,
   
