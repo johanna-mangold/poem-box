@@ -187,6 +187,17 @@ und schraubenkrone
 keucht er uns hinterher
 wie grün er riecht
 8/1
+
+heute besucht sie mich
+wir machen uns auf den weg
+waten durch heißen schlamm
+bis zur hüfte stecke ich darin 
+ich halte sie über meinem kopf
+sie klagt über den gestank
+endlich kommen wir an
+die burg ist wie neu gebaut
+gemäuer kühlt das fell
+9/1
   `.trim()
     }
   ];
