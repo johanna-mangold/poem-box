@@ -50,6 +50,15 @@ You can always teleport back to the starting point by clicking on the white dot 
       w: 490,
       h: 620,
       text: `
+reading 2026
+[[das gute übel (erzählungen) - samanta schweblin]] 
+[[100 augen - samanta schweblin]] 
+[[there is no antimemetics division - sam hughes qntm]] 
+[[old babes in the wood - margaret atwood]]
+*für den rest des lebens - zeruya shalev
+*kindred - octavia e. butler
+*künstliche intelligenz - das ende der kunst? - catrin misselhorn
+
 reading 2025
 #### fiction
 [[the heart is deceitful above all things - jt leroy]]
@@ -69,6 +78,7 @@ reading 2025
 [[david pablo - joanna yulia kluge]] 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
+[[a scanner darkly - philip k. dick
 
 #### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
@@ -98,6 +108,13 @@ reading 2025
 [[künstliche intelligenz u. der neue faschismus - rainer mühlhoff]]
 [[künstliche intelligenz und empathie - catrin misselhorn]]
 [[das seltsame und das gespenstische - mark fisher]]
+*trance-portation - diana l. paxton
+*dmt - the spirit molecule - rick strassmann
+*artificial intimacy - rob brooks
+*die entzündete seele - edward bullmore
+*erzählende affen - samira el ouassil und friedemann karig
+*rituelle körperhaltungen - nana nauwald, felicitas d. goodman
+
       `.trim()
     }, 
      {
