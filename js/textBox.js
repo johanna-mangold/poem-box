@@ -198,6 +198,14 @@ endlich kommen wir an
 die burg ist wie neu gebaut
 gemäuer kühlt das fell
 9/1
+
+mein baby ist gelb und flauschig
+ich lege es zwischen die küken
+damit es warm bleibt
+während ich schlafe
+die katze passt auf
+13/1
+
   `.trim()
     }
   ];
