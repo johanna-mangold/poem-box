@@ -19,9 +19,7 @@
 Desktop (Mouse / Trackpad)
 -------------------------
 
-Click and drag anywhere to move through the map.
-
-You can also use two-finger scrolling on a trackpad.
+Use two-finger scrolling on a trackpad to move on the map.
 
 Many elements react to hover or clicks.
 
