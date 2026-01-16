@@ -213,7 +213,7 @@ endlich kommen wir an
 die burg ist wie neu gebaut
 gemäuer kühlt das fell
 9/1
-{{https://static.wixstatic.com/media/0f3578_948ce20568604da6b72d8196799091a9~mv2.jpg/v1/fill/w_608,h_414,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_948ce20568604da6b72d8196799091a9~mv2.jpg}}
+{{img:https://static.wixstatic.com/media/0f3578_948ce20568604da6b72d8196799091a9~mv2.jpg/v1/fill/w_608,h_414,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/0f3578_948ce20568604da6b72d8196799091a9~mv2.jpg}}
 mein baby ist gelb und flauschig
 ich lege es zwischen die küken
 damit es warm bleibt
