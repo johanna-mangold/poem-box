@@ -228,6 +228,10 @@ danach legen sie ihre telefone auf's bett
 wir können die aufnahmen löschen 
 wenn wir wollen
 16/1
+
+die katze ist jetzt alt. 
+zwei tauben tragen sie davon. 
+17/1
   `.trim()
     }
   ];
