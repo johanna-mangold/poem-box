@@ -59,7 +59,6 @@ reading 2026
 [[botanik des wahnsinns - leon engler]] 
 [[und alle so still - mareike fallwickl]] 
 [[weil ich ruth bin - julia wagner]] 
-*für den rest des lebens - zeruya shalev
 
 #### non-fiction
 *homo ludens - johan huizinga
