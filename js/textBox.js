@@ -49,13 +49,27 @@ You can always teleport back to the starting point by clicking on the white dot 
       h: 620,
       text: `
 reading 2026
+#### fiction
 [[das gute übel (erzählungen) - samanta schweblin]] 
 [[100 augen - samanta schweblin]] 
 [[there is no antimemetics division - sam hughes qntm]] 
 [[old babes in the wood - margaret atwood]]
+[[die schönste version - ruth-maria thomas]] 
+[[neuromancer - william gibson]] 
+[[botanik des wahnsinns - leon engler]] 
+[[und alle so still - mareike fallwickl]] 
+[[weil ich ruth bin - julia wagner]] 
 *für den rest des lebens - zeruya shalev
-*kindred - octavia e. butler
-*künstliche intelligenz - das ende der kunst? - catrin misselhorn
+
+#### non-fiction
+*homo ludens - johan huizinga
+*kritik der digitalisierung - daniel martin feige
+*realität+ - davod j. chalmers
+*resonanz - hartmut rosa
+*cyberpunk - asma mhalla
+*unruhig bleiben - donna j. haraway
+[[toxische weiblichkeit - sophia fritz]] 
+
 
 reading 2025
 #### fiction
@@ -76,7 +90,7 @@ reading 2025
 [[david pablo - joanna yulia kluge]] 
 [[für den rest des lebens - zeruya shalev]]
 [[the dream hotel - laila lalami]] 
-[[a scanner darkly - philip k. dick
+[[a scanner darkly - philip k. dick]]
 
 #### short stories
 [[the yellow wallpaper - charlotte perkins gilman]]
